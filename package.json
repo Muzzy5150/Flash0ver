@@ -1,0 +1,40 @@
+{
+  "name": "flash0ver",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n control,web 'npm:worker' 'next dev --hostname 127.0.0.1'",
+    "worker": "tsx --env-file-if-exists=.env worker/control-plane.ts",
+    "build": "next build",
+    "start": "concurrently -k -n control,web 'npm:worker' 'next start --hostname 127.0.0.1'",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck && npm test && npm run test:wasmer && npm run build",
+    "preflight": "tsx --env-file-if-exists=.env scripts/preflight.ts",
+    "test:wasmer": "tsx scripts/verify-wasmer.ts",
+    "demo:verify": "tsx --env-file-if-exists=.env scripts/verify-live.ts",
+    "demo:reliability": "tsx --env-file-if-exists=.env scripts/verify-reliability.ts",
+    "demo:latency": "tsx scripts/analyze-latency.ts"
+  },
+  "engines": {
+    "node": ">=24.10.0"
+  },
+  "dependencies": {
+    "@tenkicloud/sandbox": "^1.0.6",
+    "@wasmer/sdk": "^0.11.0",
+    "next": "^16.3.4",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "concurrently": "^10.0.5",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
+  }
+}

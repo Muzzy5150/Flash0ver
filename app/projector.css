@@ -1,0 +1,29 @@
+@media (min-width: 1151px) {
+  main {
+    min-height: 680px;
+    padding: 10px;
+    grid-template-rows: 64px 64px 30px minmax(280px, 1fr) 150px;
+    gap: 6px;
+  }
+
+  .topbar { padding: 7px 12px; }
+  .mark { width: 42px; height: 42px; font-size: 19px; }
+  .brand h1 { font-size: 24px; }
+  .brand p { font-size: 8px; margin-top: 6px; }
+
+  .presenting {
+    padding: 7px;
+    grid-template-rows: 64px 68px 30px minmax(280px, 1fr) 150px;
+  }
+
+  main.comparing,
+  main.presenting.comparing {
+    grid-template-rows: 64px 64px 30px minmax(0, 1fr);
+  }
+
+  .comparing .comparisonHead { padding: 20px 8%; }
+  .comparing .comparisonHead h2 { margin: 5px; }
+  .comparing .compareRows { margin: 8px auto; }
+  .comparing .compareRows > div { padding: 5px; }
+  .comparing .comparisonRuns { margin: 8px auto; }
+}

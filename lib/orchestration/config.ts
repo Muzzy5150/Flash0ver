@@ -1,0 +1,3 @@
+import type { RuntimeLimits } from './runtime';
+const read=(name:string,fallback:number,min:number,max:number,env:NodeJS.ProcessEnv=process.env)=>{const value=Number(env[name]??fallback);if(!Number.isInteger(value)||value<min||value>max)throw new Error(`${name} must be an integer from ${min} to ${max}`);return value;};
+export function runtimeLimits(env:NodeJS.ProcessEnv=process.env):RuntimeLimits {return {maxWorkers:read('MAX_WORKERS',6,1,6,env),maxSteps:read('MAX_AGENT_STEPS',18,1,50,env),maxToolCalls:read('MAX_TOOL_CALLS',48,1,200,env),runTimeoutMs:read('RUN_TIMEOUT_MS',240000,1000,600000,env)};}
