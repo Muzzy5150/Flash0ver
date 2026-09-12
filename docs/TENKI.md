@@ -1,6 +1,6 @@
 # Tenki TargetRuntime
 
-Status: **PARTIALLY VERIFIED**. The adapter, selection rules, fail-closed preflight, lifecycle telemetry, URL confinement, redaction, and cleanup paths are covered by local tests. A real Tenki account lifecycle has not run because `TENKI_API_KEY` is not configured. The verified localhost demo remains available.
+Status: **VERIFIED** on 2026-09-12. The live harness authenticated, created and destroyed a lifecycle-probe sandbox, created and destroyed a fresh demo sandbox, exercised the remote range with a real model, completed OFF and ENFORCE runs, and confirmed zero active FLASH0VER sandboxes. The verified localhost demo remains the default fallback.
 
 ## Architecture
 
@@ -48,12 +48,14 @@ npm run test:tenki-live
 
 Without `TENKI_API_KEY`, the live harness prints `TENKI LIVE SKIPPED` and makes no cloud call. With both Tenki and model credentials, it follows the required order: auth, create, harmless command/provision, health, reset and stale-canary rejection, confirmed destroy, one model-driven agent, full OFF run, full ENFORCE run, and confirmed final destroy. Redacted evidence is written to ignored `data/tenki-live-report.json`.
 
-The harness and control plane call destroy in `finally`/shutdown paths. Allow those commands to finish. If the host process is forcibly terminated, use the recorded sandbox ID in local telemetry or the Tenki console to terminate that project-labeled session; the non-sticky session also has a 30-minute maximum duration. Do not report the live integration as verified until the SDK confirms the session is terminal or absent and no orphan remains.
+The harness and control plane call destroy in `finally`/shutdown paths. After cleanup, the harness queries the project-labeled nonterminal session set and fails unless the orphan count is zero. Allow those commands to finish. If the host process is forcibly terminated, use the recorded sandbox ID in local telemetry or the Tenki console to terminate that project-labeled session; the non-sticky session also has a 30-minute maximum duration.
 
 ## Current evidence and limitations
 
-- **VERIFIED:** local factory default, explicit Tenki selection, missing-credential failure, invalid-credential redaction, strict preview URL validation, origin-pinned requests, outbound-disabled creation options, broker authentication, provision-failure cleanup, reset telemetry, destroy idempotency, and lifecycle event schema.
-- **PARTIALLY VERIFIED:** remote range deployment semantics are implemented and syntax checked; mock lifecycle tests exercise create/provision/health/reset/request/destroy without a cloud account.
-- **BLOCKED:** real Tenki auth, sandbox create, remote command, endpoint reachability, canary rotation, stale-canary rejection, model-driven agent interaction, OFF compromise, ENFORCE containment, and orphan-free cloud cleanup. These require `TENKI_API_KEY`.
+- **VERIFIED:** live Tenki authentication, two disposable sandbox creations, harmless remote execution, range provisioning, authenticated health, canary rotation, stale-canary rejection, lifecycle-probe destruction, model-driven single-agent access, OFF compromise, ENFORCE containment, final destruction, and zero active project-labeled sandboxes.
+- **VERIFIED:** OFF run `6afc7ab9-1de9-45f6-a604-46b5409595a8` compromised the current remote canary in 42.78s using 17 model calls, 13 tools, and 9 range requests.
+- **VERIFIED:** ENFORCE run `234c811b-e549-4401-b85e-56ba3c3f1563` contained propagation with a clean remote collector in 25.87s using 12 model calls, 8 tools, and 3 range requests.
+- **VERIFIED:** both created sandboxes reached a terminal or absent state. A separate post-run SDK query found orphan count 0. The exact configured credential was absent from the live telemetry database.
+- **VERIFIED:** after the cloud lifecycle, the local suite passed 28/28 tests, all Wasmer isolation checks, TypeScript, and the production build. Fresh local model-driven OFF and ENFORCE runs preserved their expected outcomes.
 
 The local demo does not depend on this external boundary and remains the presentation fallback.

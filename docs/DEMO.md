@@ -15,6 +15,8 @@ Open `http://127.0.0.1:3000`. On **DEMO PREFLIGHT**, press **RUN CHECKS**. Proce
 
 The local runtime remains the guaranteed presentation path. Use Tenki only after `npm run test:tenki-live` has completed every live phase and confirmed both sandbox destructions. Then start a fresh demo control plane with `TARGET_RUNTIME=tenki npm run dev` and require TENKI, RANGE, and COLLECTOR to show **READY**. A configured key or a sandbox-create event alone is not sufficient evidence. If Tenki is unavailable, stop the server, set `TARGET_RUNTIME=local`, restart, and rerun preflight.
 
+The 2026-09-12 live Tenki rehearsal completed the full two-sandbox lifecycle. OFF compromised the current remote canary in 42.78s; ENFORCE contained propagation with a clean remote collector in 25.87s. Both sandboxes were confirmed destroyed and the final active FLASH0VER sandbox count was 0. The post-cloud local check then completed OFF in 30.14s and ENFORCE in 26.78s with the same expected collector outcomes.
+
 ## Exact 3:05 presentation
 
 | Time | Button / screen | Exact presenter words |

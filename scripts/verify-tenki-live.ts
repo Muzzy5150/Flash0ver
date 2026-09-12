@@ -24,7 +24,7 @@ try{
  const lifecycleAfter=bus.list().at(-1)?.sequence??0;
  console.log('A AUTH                   authenticating with Tenki');await target.start();sandboxId=target.metadata().sandboxId;
  const lifecycleTypes=bus.list(undefined,lifecycleAfter).map(event=>event.eventType);requiredInOrder(lifecycleTypes,'TENKI_AUTH_OK','TENKI_SANDBOX_CREATED','TENKI_PROVISION_STARTED','TENKI_PROVISION_READY');
- evidence.phases={...(evidence.phases as object),auth:'VERIFIED',create:'VERIFIED',provision:'VERIFIED'};
+ evidence.phases={...(evidence.phases as object),auth:'VERIFIED',create:'VERIFIED',command:'VERIFIED',provision:'VERIFIED'};
  console.log('B CREATE                 sandbox creation event verified');
  console.log('C COMMAND/PROVISION      harmless command and range readiness verified');
  console.log(`D HEALTH                 ${JSON.stringify(await target.health())}`);assert((await target.health()).healthy,'Tenki range health failed');
@@ -41,9 +41,11 @@ try{
 }finally{
  sandboxId=target?.metadata().sandboxId??sandboxId;await wasmer.stop();await target?.stop().catch(error=>{evidence.cleanupError=safe(error);process.exitCode=2;});
  if(sandboxId){try{await verifyDestroyed(apiKey,sandboxId);evidence.destroy='VERIFIED';}catch(error){evidence.cleanupError=safe(error);process.exitCode=2;}}
+ try{const orphanCount=await countProjectOrphans(apiKey);evidence.orphanCount=orphanCount;if(orphanCount!==0){evidence.cleanupError=`${orphanCount} active FLASH0VER Tenki sandbox(es) remain`;process.exitCode=2;}}catch(error){evidence.cleanupError=safe(error);process.exitCode=2;}
  evidence.endedAt=new Date().toISOString();writeFileSync('data/tenki-live-report.json',`${JSON.stringify(evidence,null,2)}\n`);bus.close();
 }
-if(!process.exitCode)console.log('TENKI LIVE VERIFIED · auth/create/provision/health/reset/single-agent/OFF/ENFORCE/destroy all passed');
+if(!process.exitCode)console.log('TENKI LIVE VERIFIED · auth/create/provision/health/reset/single-agent/OFF/ENFORCE/destroy all passed · orphan count 0');
+process.exit(process.exitCode??0);
 
 async function verifyResetAndStaleCanary(range:TenkiTargetRuntime){
  const first='tenki-stale-a';await range.reset(first);
@@ -65,6 +67,7 @@ async function verifySingleAgent(range:TenkiTargetRuntime,model:ReturnType<typeo
 }
 async function call(range:TenkiTargetRuntime,role:RangeRequest['role'],service:RangeRequest['service'],path:string,body:Record<string,unknown>|undefined,runId:string){return range.request({role,service,path,method:body?'POST':'GET',body,agentId:`verify-${role}`,runId});}
 async function verifyDestroyed(key:string,id:string){const client=new TenkiSandbox({authToken:key,warningHandler:null});try{const session=await client.get(id);if(!isTerminal(session.state))throw new Error(`Tenki sandbox cleanup not confirmed; state=${session.state}`);}catch(error){if(!(error instanceof SessionNotFoundError))throw error;}finally{client.close();}}
+async function countProjectOrphans(key:string){const client=new TenkiSandbox({authToken:key,warningHandler:null});try{const sessions=await client.list({tags:['flash0ver'],includeTerminated:false});return sessions.filter(session=>session.metadata.project==='flash0ver'&&!isTerminal(session.state)).length;}finally{client.close();}}
 function requiredInOrder(values:string[],...expected:string[]){let cursor=-1;for(const value of expected){cursor=values.indexOf(value,cursor+1);assert(cursor>=0,`Missing or out-of-order ${value} lifecycle event`);}}
 function assert(value:unknown,message:string):asserts value{if(!value)throw new Error(message);}
-function safe(error:unknown){return (error instanceof Error?error.message:'Tenki verification failed').replace(/tk_[A-Za-z0-9_-]+/g,'[REDACTED]');}
+function safe(error:unknown){let message=error instanceof Error?error.message:'Tenki verification failed';if(apiKey)message=message.split(apiKey).join('[REDACTED]');return message.replace(/tk_[A-Za-z0-9_-]+/g,'[REDACTED]');}
