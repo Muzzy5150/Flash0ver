@@ -16,7 +16,8 @@
     "demo:verify": "tsx --env-file-if-exists=.env scripts/verify-live.ts",
     "demo:rehearse": "tsx --env-file-if-exists=.env scripts/rehearsal.ts",
     "demo:reliability": "tsx --env-file-if-exists=.env scripts/verify-reliability.ts",
-    "demo:latency": "tsx scripts/analyze-latency.ts"
+    "demo:latency": "tsx scripts/analyze-latency.ts",
+    "test:tenki-live": "tsx --env-file-if-exists=.env scripts/verify-tenki-live.ts"
   },
   "engines": {
     "node": ">=24.10.0"

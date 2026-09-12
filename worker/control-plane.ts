@@ -13,11 +13,12 @@ import type { Mode } from '../lib/events/schema';
 
 mkdirSync('data',{recursive:true});
 const bus=new EventBus('data/flash0ver.sqlite');
-const targetSelection=targetFromEnv();const target=targetSelection.runtime;await target.start();await target.reset(`boot-${randomUUID()}`);
+const targetSelection=targetFromEnv(process.env,bus);const target=targetSelection.runtime;let targetStartError:string|undefined;
+try{await target.start();await target.reset(`boot-${randomUUID()}`);}catch(error){targetStartError=error instanceof Error?error.message:'Selected target runtime failed to initialize';}
 const provider=providerFromEnv();const wasmer=new WasmerExecutor(bus);const runtime=new SwarmRuntime(provider,bus,target,wasmer,runtimeLimits());
 let mode:Mode='OFF';let active=false;let currentRunId:string|undefined;let preflight:PreflightCheck[]=[];let activeRun:ReturnType<SwarmRuntime['run']>|undefined;
 
-async function refreshPreflight(probeModel=true){preflight=await runPreflight({provider,bus,target,wasmer,probeModel});return preflight;}
+async function refreshPreflight(probeModel=true){preflight=await runPreflight({provider,bus,target,wasmer,probeModel,targetError:targetStartError});return preflight;}
 const server=createServer(async(req,res)=>{
  try {
   const url=new URL(req.url||'/','http://localhost');setHeaders(res);

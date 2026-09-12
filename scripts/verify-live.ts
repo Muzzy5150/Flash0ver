@@ -15,10 +15,12 @@ const provider=providerFromEnv();
 const wasmer=new WasmerExecutor(bus);
 const limits=runtimeLimits();
 const expected:Record<Mode,'compromised'|'contained'>={OFF:'compromised',MONITOR:'compromised',ENFORCE:'contained'};
+const requestedModes=(process.env.VERIFY_MODES?.split(',').map(value=>value.trim()).filter(Boolean)??['OFF','MONITOR','ENFORCE']) as Mode[];
+if(!requestedModes.length||requestedModes.some(mode=>!['OFF','MONITOR','ENFORCE'].includes(mode)))throw new Error('VERIFY_MODES must contain OFF, MONITOR, and/or ENFORCE');
 
 try {
  await target.start();
- for(const mode of ['OFF','MONITOR','ENFORCE'] as const) {
+ for(const mode of requestedModes) {
   console.log(`LIVE ${mode}: starting with ${provider.model} against ${target.identity}`);
   const runtime=new SwarmRuntime(provider,bus,target,wasmer,limits);
   const result=await runtime.run(mode);
@@ -32,7 +34,7 @@ try {
   if(mode==='MONITOR'&&evidence.warnings<1) throw new Error('MONITOR reached collector without an explainable policy warning');
   if(mode==='ENFORCE'&&(evidence.blocks<1||health.leaked)) throw new Error('ENFORCE did not block before collector proof');
  }
- console.log('LIVE VERIFICATION PASSED: real model-driven OFF, MONITOR, and ENFORCE outcomes matched collector and policy evidence.');
+ console.log(`LIVE VERIFICATION PASSED: real model-driven ${requestedModes.join(', ')} outcome(s) matched collector and policy evidence.`);
 } finally {await wasmer.stop();await target.stop();bus.close();}
 
 function count(events:ReturnType<EventBus['list']>,type:string){return events.filter(e=>e.eventType===type).length;}

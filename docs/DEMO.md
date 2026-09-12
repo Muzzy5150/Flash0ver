@@ -7,11 +7,13 @@ The primary sequence is 3:05 using the final measured OFF runtime of 35.11s and 
 Run:
 
 ```bash
-npm run demo:rehearse
-npm run dev
+TARGET_RUNTIME=local npm run demo:rehearse
+TARGET_RUNTIME=local npm run dev
 ```
 
 Open `http://127.0.0.1:3000`. On **DEMO PREFLIGHT**, press **RUN CHECKS**. Proceed only when MODEL, WASMER, DATABASE, RANGE, and COLLECTOR show **READY** and the page displays **DEMO READY**. TENKI may remain **DEGRADED**. Press **RESET RANGE** once, return to **PREFLIGHT**, rerun the checks, and leave the readiness page projected. Use 1280×720 or 1920×1080 at 100% browser zoom.
+
+The local runtime remains the guaranteed presentation path. Use Tenki only after `npm run test:tenki-live` has completed every live phase and confirmed both sandbox destructions. Then start a fresh demo control plane with `TARGET_RUNTIME=tenki npm run dev` and require TENKI, RANGE, and COLLECTOR to show **READY**. A configured key or a sandbox-create event alone is not sufficient evidence. If Tenki is unavailable, stop the server, set `TARGET_RUNTIME=local`, restart, and rerun preflight.
 
 ## Exact 3:05 presentation
 
@@ -35,6 +37,7 @@ If a live run takes longer than the measured window, continue describing the act
 ## Emergency recovery
 
 - **Preflight is not ready:** Do not press RUN. Read the failing component aloud, press **RUN CHECKS** once, and continue only after every mandatory local component is **READY**. TENKI may be **DEGRADED**.
+- **Explicit Tenki mode is blocked:** Do not press RUN and do not describe localhost as cloud execution. Restart with `TARGET_RUNTIME=local npm run dev`, rerun checks, and use the verified local presentation path.
 - **Telemetry link lost:** The dashboard shows **TELEMETRY LINK LOST** and disables RUN. Wait for **TELEMETRY LIVE**. If it does not reconnect, restart `npm run dev`, reload the page, press **RUN CHECKS**, then **RESET RANGE**.
 - **Model, target, collector, Wasmer, or timeout failure:** Leave the **TECHNICAL FAILURE** or **RUN STOPPED / NO SUCCESS STATE DISPLAYED** panel visible. Press **RESET RANGE**, return to **PREFLIGHT**, and rerun checks. Do not use a prior run as the current result.
 - **Run is active but must stop:** Press **KILL SWARM**. Confirm **RUN STOPPED**, then press **RESET RANGE**. The current event tape should return to 0 and the header should show **NO ACTIVE RUN**.
