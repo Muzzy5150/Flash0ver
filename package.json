@@ -14,6 +14,7 @@
     "preflight": "tsx --env-file-if-exists=.env scripts/preflight.ts",
     "test:wasmer": "tsx scripts/verify-wasmer.ts",
     "demo:verify": "tsx --env-file-if-exists=.env scripts/verify-live.ts",
+    "demo:rehearse": "tsx --env-file-if-exists=.env scripts/rehearsal.ts",
     "demo:reliability": "tsx --env-file-if-exists=.env scripts/verify-reliability.ts",
     "demo:latency": "tsx scripts/analyze-latency.ts"
   },

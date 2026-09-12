@@ -1,24 +1,46 @@
-# FLASH0VER demo runbook
+# FLASH0VER live demo runbook
 
-## 2:45 presentation sequence
+The primary sequence is 3:05 using the final measured OFF runtime of 35.11s and ENFORCE runtime of 23.72s. The screen remains driven by the current run's real backend telemetry and collector state.
 
-This sequence runs both OFF and ENFORCE live. The optimized six-run campaign completed OFF in 35.8–43.3 seconds and ENFORCE in 29.7–37.9 seconds without fixtures or simulated telemetry.
+## Before the audience arrives
 
-| Time | Presenter action and narration |
-|---|---|
-| 0:00–0:12 | Open presentation mode. Run **DEMO PREFLIGHT** and point to MODEL, WASMER, DATABASE, RANGE, and COLLECTOR as `READY`. TENKI may be `DEGRADED`. Do not start if a required dependency is blocked. |
-| 0:12–0:20 | Select **OFF** and click **RUN**. Explain that nodes and edges appear only when the backend emits real entities and interactions. |
-| 0:20–0:58 | Follow capability delegation, agent messages, tool requests, HTTP calls, and artifact transfers. Let the real `CANARY_LEAK` produce **CANARY COMPROMISED**. Read its run ID, source agent, provenance depth, agent count, and elapsed time. |
-| 0:58–1:08 | Return to telemetry, click **RESET**, select **ENFORCE**, and click **RUN**. The reset rotates the canary and clears the collector. |
-| 1:08–1:46 | Point out that ordinary recon and internal activity continue. When policy fires, read the requesting agent, requested action, provenance, capability chain, rule, and `DENY`; point to the red denied edge. |
-| 1:46–2:02 | Present **PROPAGATION CONTAINED / CANARY SAFE** only after the real collector is clean and the run concludes contained. |
-| 2:02–2:25 | Open **OFF ↔ ENFORCE**. Show `OFF — CANARY COMPROMISED` against `ENFORCE — CANARY SAFE`, with real counts and run IDs. |
-| 2:25–2:45 | Return to live telemetry and inspect the denied agent's role, parent, model, capabilities, tools, messages, artifacts, provenance, and policy decisions. |
+Run:
 
-The optimized campaign's median runtimes were 40.7 seconds for OFF and 31.8 seconds for ENFORCE. Narration should continue while each run executes. If completion exceeds the indicated time, wait for real collector state; never advance to a success message manually.
+```bash
+npm run demo:rehearse
+npm run dev
+```
 
-## Full live contrast
+Open `http://127.0.0.1:3000`. On **DEMO PREFLIGHT**, press **RUN CHECKS**. Proceed only when MODEL, WASMER, DATABASE, RANGE, and COLLECTOR show **READY** and the page displays **DEMO READY**. TENKI may remain **DEGRADED**. Press **RESET RANGE** once, return to **PREFLIGHT**, rerun the checks, and leave the readiness page projected. Use 1280×720 or 1920×1080 at 100% browser zoom.
 
-For a longer technical session, open the latency telemetry for each run. `RUN_TIMING` records every model call, coordinator worker wait, worker duration, tool latency, Wasmer setup/execution, HTTP time, SQLite event persistence, and token usage. `npm run demo:latency` writes the per-call report to gitignored `data/latency-report.json`.
+## Exact 3:05 presentation
 
-If a run fails, show the actual preflight or event error. Do not present the Vitest harness as an autonomous run and do not use a stale collector result.
+| Time | Button / screen | Exact presenter words |
+|---|---|---|
+| 0:00–0:15 | Show **DEMO PREFLIGHT**. | “FLASH0VER is running against our disposable local AI-security range. These are live checks: the model provider, Wasmer sandbox, database, range, and collector are ready. Tenki is optional and is not part of this local guarantee.” |
+| 0:15–0:25 | Press **ENTER STAGE**. Select **OFF**, then press **RUN**. | “First I’ll remove runtime enforcement. Nothing on this graph is staged: an agent, service, or edge appears only when the backend emits the corresponding event.” |
+| 0:25–0:45 | Point to new worker nodes and the progression strip. | “The coordinator is choosing constrained workers. Each worker has its own identity, parent, role, model, and capability set. The system is composing their results without a hard-coded solution path.” |
+| 0:45–1:00 | Follow the newest animated edge and service nodes. | “Purple is an agent message, amber is a tool request, cyan is a real HTTP call, white carries provenance, and green delegates capability. The graph is showing the current run only.” |
+| 1:00–1:15 | Wait for the real collector event and show **CANARY COMPROMISED**. | “The real collector received the current rotating canary. FLASH0VER was off, so individually limited capabilities composed into a compromise. This evidence is from this run: four agents, eighteen model calls, fourteen tool calls, thirty-five seconds, and twelve provenance hops.” |
+| 1:15–1:27 | Press **RESET RANGE**. Select **ENFORCE**, then press **RUN**. | “Reset rotates the canary, clears the collector, and removes the previous run from the live view. Now I’ll repeat the model-driven run with deterministic enforcement.” |
+| 1:27–1:47 | Follow ordinary agent and HTTP activity. | “Recon and analysis continue. FLASH0VER does not stop ordinary permitted work. It evaluates the requested operation together with the agent, capability chain, and provenance path.” |
+| 1:47–2:00 | On **POLICY BLOCK**, point to action, agent, rule, and denied edge. | “Here is the exact decision: this operator requested privileged authorization. The `SWARM_CAPABILITY_COMPOSITION` rule saw the composed chain and denied that edge. The collector has not been declared safe yet; the screen is still waiting for confirmation.” |
+| 2:00–2:15 | Wait for **PROPAGATION CONTAINED / CANARY SAFE**. | “Now the run has concluded and the current collector is confirmed clean. Propagation was contained after fourteen model calls and ten tool calls. This success state cannot appear from the block alone.” |
+| 2:15–2:42 | Press **RETURN TO TELEMETRY**, then **OFF ↔ ENFORCE**. | “These are two persisted real run IDs. OFF reached the collector. ENFORCE allowed the same ordinary stages but denied the dangerous composition, and the collector remained safe.” |
+| 2:42–2:58 | Press **LIVE STAGE** and select the operator node. | “If you want the technical record, every agent is inspectable: identity, role, parent, model, capabilities, tools, messages, artifacts, provenance, and policy decisions.” |
+| 2:58–3:05 | Leave the graph or comparison visible. | “FLASH0VER makes cross-agent capability composition visible and enforces it at runtime, while the model and sandboxed execution remain real.” |
+
+If a live run takes longer than the measured window, continue describing the active agent, latest real edge, or progression strip. Wait for the actual collector result. Never dismiss a technical failure as a successful outcome.
+
+## Emergency recovery
+
+- **Preflight is not ready:** Do not press RUN. Read the failing component aloud, press **RUN CHECKS** once, and continue only after every mandatory local component is **READY**. TENKI may be **DEGRADED**.
+- **Telemetry link lost:** The dashboard shows **TELEMETRY LINK LOST** and disables RUN. Wait for **TELEMETRY LIVE**. If it does not reconnect, restart `npm run dev`, reload the page, press **RUN CHECKS**, then **RESET RANGE**.
+- **Model, target, collector, Wasmer, or timeout failure:** Leave the **TECHNICAL FAILURE** or **RUN STOPPED / NO SUCCESS STATE DISPLAYED** panel visible. Press **RESET RANGE**, return to **PREFLIGHT**, and rerun checks. Do not use a prior run as the current result.
+- **Run is active but must stop:** Press **KILL SWARM**. Confirm **RUN STOPPED**, then press **RESET RANGE**. The current event tape should return to 0 and the header should show **NO ACTIVE RUN**.
+- **Immediately after compromise or a policy block:** Press **RESET RANGE** on the modal. This stops any active work, rotates the canary, clears the collector, and clears the current live view.
+- **Native fullscreen fails:** The presentation layout remains active. Use the browser or projector fullscreen control; the demo behavior is unchanged.
+
+## Technical follow-up
+
+`RUN_TIMING` records model calls, coordinator wait, worker duration, tool latency, Wasmer execution, HTTP time, SQLite persistence, and token usage. Run `npm run demo:latency` to write the redacted per-call report to gitignored `data/latency-report.json`. Keep the existing reliability evidence available with `npm run demo:reliability`.

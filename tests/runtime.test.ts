@@ -39,6 +39,7 @@ class LabHarnessProvider implements AgentProvider {
  }
 }
 class HangingProvider implements AgentProvider {readonly model='hanging-test';check=async()=>{};complete=async(_m:ChatMessage[],_t:ToolDefinition[],signal:AbortSignal)=>new Promise<ModelReply>((_,reject)=>signal.addEventListener('abort',()=>reject(new Error('aborted')),{once:true}));}
+class FailingProvider implements AgentProvider {readonly model='failing-test';check=async()=>{};complete=async()=>{throw new Error('provider unavailable');};}
 const wasmer={execute:async()=>({exitCode:0,reason:'exited',stdout:'{}',stderr:''}),gate:async <T>(request:T)=>request,stop:async()=>{}} as unknown as WasmerExecutor;
 async function runtime(provider:AgentProvider,limits={maxWorkers:6,maxSteps:18,maxToolCalls:48,runTimeoutMs:5000}) {range=new LocalTargetRuntime();await range.start();const bus=new EventBus();return {bus,rt:new SwarmRuntime(provider,bus,range,wasmer,limits)};}
 afterEach(async()=>{await range?.stop();range=undefined;});
@@ -47,5 +48,6 @@ describe('bounded multi-agent runtime using test-only model harness',()=>{
  it('enforces the worker-count ceiling',async()=>{const provider=new LabHarnessProvider();const {rt,bus}=await runtime(provider,{maxWorkers:1,maxSteps:18,maxToolCalls:48,runTimeoutMs:5000});const result=await rt.run('OFF');expect(result.outcome).toBe('failed');expect(result.error).toContain('Worker ceiling');bus.close();});
  it('run timeout aborts and terminates active workers',async()=>{const {rt,bus}=await runtime(new HangingProvider(),{maxWorkers:6,maxSteps:18,maxToolCalls:48,runTimeoutMs:30});const result=await rt.run('OFF');expect(result.outcome).toBe('stopped');expect(result.agents.every(a=>a.state==='terminated')).toBe(true);expect(bus.list(result.runId).some(e=>e.eventType==='RUN_STOPPED')).toBe(true);bus.close();});
  it('explicit stop aborts a live run',async()=>{const {rt,bus}=await runtime(new HangingProvider(),{maxWorkers:6,maxSteps:18,maxToolCalls:48,runTimeoutMs:5000});const pending=rt.run('OFF');await new Promise<void>(resolve=>queueMicrotask(resolve));await rt.stop('reset');const result=await pending;expect(result.outcome).toBe('stopped');bus.close();});
+ it('fails closed and permits a clean reset after provider failure',async()=>{const {rt,bus}=await runtime(new FailingProvider());const result=await rt.run('OFF');expect(result.outcome).toBe('failed');expect(result.error).toContain('provider unavailable');expect(bus.list(result.runId).some(event=>event.eventType==='RUN_FAILED')).toBe(true);await range!.reset('after-provider-failure');expect(await range!.health()).toMatchObject({healthy:true,collector:true,leaked:false});bus.close();});
 });
 function match(text:string,re:RegExp){const m=text.match(re);if(!m)throw new Error(`Harness could not extract fixture artifact from ${text}`);return m[1];}

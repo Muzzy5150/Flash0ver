@@ -15,8 +15,7 @@ mkdirSync('data',{recursive:true});
 const bus=new EventBus('data/flash0ver.sqlite');
 const targetSelection=targetFromEnv();const target=targetSelection.runtime;await target.start();await target.reset(`boot-${randomUUID()}`);
 const provider=providerFromEnv();const wasmer=new WasmerExecutor(bus);const runtime=new SwarmRuntime(provider,bus,target,wasmer,runtimeLimits());
-const latestPersistedRun=bus.list().findLast(event=>event.eventType==='RUN_STARTED')?.runId;
-let mode:Mode='OFF';let active=false;let currentRunId:string|undefined=latestPersistedRun;let preflight:PreflightCheck[]=[];let activeRun:ReturnType<SwarmRuntime['run']>|undefined;
+let mode:Mode='OFF';let active=false;let currentRunId:string|undefined;let preflight:PreflightCheck[]=[];let activeRun:ReturnType<SwarmRuntime['run']>|undefined;
 
 async function refreshPreflight(probeModel=true){preflight=await runPreflight({provider,bus,target,wasmer,probeModel});return preflight;}
 const server=createServer(async(req,res)=>{
@@ -39,7 +38,7 @@ const server=createServer(async(req,res)=>{
  } catch(error){return json(res,400,{error:error instanceof Error?error.message:'Request failed'});}
 });
 function state(){const events=bus.list().slice(-5000);return {mode,active,currentRunId,preflight,events,agents:[...runtime.agents.values()],target:target.identity};}
-function streamEvents(res:ServerResponse,runId?:string,after=0){res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache, no-transform',connection:'keep-alive','x-accel-buffering':'no'});for(const event of bus.list(runId,after))res.write(`id: ${event.sequence}\ndata: ${JSON.stringify(event)}\n\n`);const unsub=bus.subscribe(event=>{if(!runId||event.runId===runId)res.write(`id: ${event.sequence}\ndata: ${JSON.stringify(event)}\n\n`);});res.on('close',unsub);}
+function streamEvents(res:ServerResponse,runId?:string,after=0){res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache, no-transform',connection:'keep-alive','x-accel-buffering':'no'});res.write(': connected\n\n');for(const event of bus.list(runId,after))res.write(`id: ${event.sequence}\ndata: ${JSON.stringify(event)}\n\n`);const unsub=bus.subscribe(event=>{if(!runId||event.runId===runId)res.write(`id: ${event.sequence}\ndata: ${JSON.stringify(event)}\n\n`);});const heartbeat=setInterval(()=>res.write(': heartbeat\n\n'),15000);res.on('close',()=>{clearInterval(heartbeat);unsub();});}
 async function body(req:IncomingMessage){let text='';for await(const chunk of req){text+=chunk;if(Buffer.byteLength(text)>16384)throw new Error('Body too large');}return text?JSON.parse(text):{};}
 function setHeaders(res:ServerResponse){res.setHeader('access-control-allow-origin','http://127.0.0.1:3000');res.setHeader('access-control-allow-methods','GET,POST,OPTIONS');res.setHeader('access-control-allow-headers','content-type');res.setHeader('x-content-type-options','nosniff');}
 function json(res:ServerResponse,status:number,value:unknown){res.setHeader('content-type','application/json');res.writeHead(status);res.end(JSON.stringify(value));}
