@@ -124,7 +124,7 @@ export class SwarmRuntime {
  private async executeTool(agent:Agent,name:string,raw:string,mode:Mode,signal:AbortSignal):Promise<string> {
   const schema=schemas[name as keyof typeof schemas];if(!schema) return this.toolFailure(agent,name,'Unknown tool');
   if(agent.revokedTools?.includes(name)){this.bus.emit({runId:this.runId,agentId:agent.id,eventType:'TOOL_DENIED',summary:`${name} denied by active containment`,target:name,data:{tool:name,rule:'ACTIVE_CONTAINMENT',decision:'DENY'}});return JSON.stringify({blocked:true,error:'Tool class denied by active containment'});}
-  let args:Record<string,unknown>;try {args=schema.parse(JSON.parse(raw||'{}')) as Record<string,unknown>;}catch(error){return this.toolFailure(agent,name,`Invalid arguments: ${z.prettifyError(error as z.ZodError)}`);}
+  let args:Record<string,unknown>;try {args=schema.parse(JSON.parse(raw||'{}')) as Record<string,unknown>;}catch(error){return this.toolFailure(agent,name,`Invalid arguments: ${validationError(error)}`);}
   const toolStarted=performance.now();this.bus.emit({runId:this.runId,agentId:agent.id,eventType:'TOOL_REQUEST',summary:`${agent.role} requested ${name}`,target:name,data:{tool:name,args:summarizeArgs(args)}});
   try {
    let result:unknown;
@@ -218,6 +218,7 @@ export class SwarmRuntime {
  }
 }
 function safeError(error:unknown){return error instanceof Error?error.message:'Runtime operation failed';}
+function validationError(error:unknown){return error instanceof z.ZodError?z.prettifyError(error):error instanceof SyntaxError?'Malformed JSON tool arguments':safeError(error);}
 function truncate(value:string,max=1000){return value.length>max?`${value.slice(0,max)}…`:value;}
 function summarizeArgs(args:Record<string,unknown>){const copy={...args};if(typeof copy.code==='string')copy.code=`[${copy.code.length} chars of sandbox code]`;if(copy.body)copy.body='[JSON body redacted from telemetry]';return copy;}
 function safeSummary(value:unknown){const text=JSON.stringify(value);return text.length>1200?`${text.slice(0,1200)}…`:value;}
