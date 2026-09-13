@@ -14,19 +14,15 @@
 .teamLane rect{fill:#0d141844;stroke:#26343c88;stroke-width:1}
 .teamLane text{fill:#687983;font-size:6px;font-weight:900;letter-spacing:1.2px}
 .lane-web rect{stroke:#2b738088}.lane-code rect{stroke:#2d664d88}.lane-identity rect{stroke:#80662288}.lane-observability rect{stroke:#3a668288}.lane-operations rect{stroke:#74404a88}
-.edgePath{fill:none;stroke-width:1.35;opacity:.54;vector-effect:non-scaling-stroke;transition:opacity .22s,stroke-width .22s,filter .22s}
-.edge.message .edgePath{stroke:#8bdff0}
-.edge.tool .edgePath{stroke:var(--amber);stroke-dasharray:5 5}
-.edge.http .edgePath{stroke:#31bed9;stroke-dasharray:2 3}
-.edge.artifact .edgePath{stroke:#d8e1e5;stroke-dasharray:1 5}
-.edge.delegation .edgePath{stroke:var(--green);stroke-dasharray:10 5}
-.edge.composition .edgePath{stroke:var(--amber);stroke-width:2.6;stroke-dasharray:12 3 2 3;opacity:.9;filter:drop-shadow(0 0 4px #ffb11b66)}
-.edge.containment .edgePath{stroke:var(--green);stroke-width:3;stroke-dasharray:9 4}
-.edge.blocked .edgePath{stroke:var(--red);stroke-width:3.8;stroke-dasharray:7 4;opacity:1}
-.edge.focused .edgePath{opacity:.95;stroke-width:2.8;filter:drop-shadow(0 0 4px currentColor)}
-.edge.active .edgePath{opacity:1;stroke-width:3;filter:drop-shadow(0 0 5px currentColor);animation:swarmEdgeFlow 1.1s linear infinite}
+.edgePath,.edgeAura{fill:none;vector-effect:non-scaling-stroke;transition:opacity .22s,stroke-width .22s,filter .22s}
+.edgePath{stroke:currentColor;stroke-width:1.35;opacity:.5}.edgeAura{stroke:currentColor;stroke-width:9;opacity:0;filter:blur(2.2px)}
+.edge.message{color:#8bdff0}.edge.tool{color:var(--amber)}.edge.tool .edgePath{stroke-dasharray:5 5}.edge.http{color:#31bed9}.edge.http .edgePath{stroke-dasharray:2 3}.edge.artifact{color:#d8e1e5}.edge.artifact .edgePath{stroke-dasharray:1 5}.edge.delegation{color:var(--green)}.edge.delegation .edgePath{stroke-dasharray:10 5}
+.edge.composition{color:var(--amber)}.edge.composition .edgePath{stroke-width:2.7;stroke-dasharray:12 3 2 3;opacity:.9;filter:drop-shadow(0 0 4px #ffb11b66)}
+.edge.containment{color:var(--green)}.edge.containment .edgePath{stroke-width:3.1;stroke-dasharray:9 4}.edge.blocked{color:var(--red)}.edge.blocked .edgePath{stroke-width:3.8;stroke-dasharray:7 4;opacity:1}
+.edge.focused .edgePath{opacity:1;stroke-width:3.6;filter:drop-shadow(0 0 6px currentColor)}.edge.focused .edgeAura,.edge.active .edgeAura{opacity:.2}.focus-danger .edge.focused .edgeAura{opacity:.32}.focus-containment .edge.focused .edgeAura{opacity:.27}.focus-composition .edge.focused .edgeAura{opacity:.25}
+.edge.active .edgePath{opacity:1;stroke-width:4;filter:drop-shadow(0 0 7px currentColor);animation:swarmEdgeFlow 1.1s linear infinite}
 .edge.blocked.active .edgePath{stroke-width:4.5;animation:deniedEdge .75s ease-in-out infinite alternate}
-.edge.dimmed .edgePath{opacity:.22}
+.edge.dimmed .edgePath{opacity:.11}.edge.dimmed .edgeAura{opacity:0}
 .nodeLayer>*{transition:opacity .25s,filter .25s}
 .agentNode{--node:#d8e1e5;--node-fill:#11171b;cursor:pointer;outline:none}
 .agentNode.team-web{--node:#45d8ee;--node-fill:#0a1b20}
@@ -41,7 +37,9 @@
 .agentNode.role-coordinator .nodeCore{stroke-width:3.5;filter:drop-shadow(0 0 8px #ffb11b55)}
 .agentNode.role-sentinel .nodeCore{stroke-width:3;filter:drop-shadow(0 0 7px #38e68b44)}
 .agentNode .stateRing{fill:none;stroke:var(--node);stroke-width:1;opacity:.35}
-.agentNode .commandHalo{fill:none;stroke:var(--amber);stroke-width:1;stroke-dasharray:3 4;opacity:.55;animation:swarmRingSpin 12s linear infinite;transform-box:fill-box;transform-origin:center}
+.agentNode .commandOrbit{fill:#17110755;stroke:#ffb11b88;stroke-width:1.2;stroke-dasharray:1 5;animation:swarmRingSpin 18s linear infinite;transform-box:fill-box;transform-origin:center}
+.agentNode .commandHalo{fill:none;stroke:var(--amber);stroke-width:1.4;stroke-dasharray:5 3;opacity:.72;animation:swarmRingSpin 10s linear infinite reverse;transform-box:fill-box;transform-origin:center}
+.agentNode .commandCrosshair{fill:none;stroke:var(--amber);stroke-width:1.5;opacity:.8}.agentNode .leadBrackets{fill:none;stroke:var(--node);stroke-width:1.6;opacity:.78}.agentNode .sentinelShield{fill:#09161188;stroke:var(--green);stroke-width:1.4;stroke-dasharray:4 3;opacity:.9}
 .agentNode .activityDot{fill:var(--node);stroke:#071014;stroke-width:1.4}
 .agentNode .role{text-anchor:middle;fill:#f8fbfc;font-size:9px;font-weight:950;letter-spacing:.5px;pointer-events:none}
 .agentNode.role-coordinator .role,.agentNode.role-lead .role{font-size:9.5px}
@@ -50,8 +48,8 @@
 .agentNode .nodeId{text-anchor:middle;fill:#71838c;font-size:5.5px;font-weight:700;letter-spacing:.65px;pointer-events:none}
 .agentNode .microTelemetry{text-anchor:middle;fill:#b9c4c9;font-size:6px;font-weight:700;letter-spacing:.35px;pointer-events:none}
 .agentNode:hover .nodeCore,.agentNode.selected .nodeCore{stroke-width:4;filter:drop-shadow(0 0 8px var(--node))}
-.agentNode.focused .stateRing{opacity:1;stroke-width:2.4;filter:drop-shadow(0 0 5px var(--node))}
-.agentNode.dimmed,.serviceNode.dimmed{opacity:.58}
+.agentNode.focused .stateRing{opacity:1;stroke-width:2.8;filter:drop-shadow(0 0 8px var(--node))}.agentNode.focused .nodeCore{filter:drop-shadow(0 0 7px var(--node))}
+.agentNode.dimmed,.serviceNode.dimmed{opacity:.43}.agentNode.role-lead .role{letter-spacing:1px}.agentNode.role-worker .nodeCore{stroke-width:1.8}.agentNode.team-operations.role-lead .nodeCore,.agentNode.team-operations.focused .nodeCore{filter:drop-shadow(0 0 9px #ff425577)}.agentNode.role-sentinel .role{fill:#dffff0}.agentNode.role-sentinel .activityDot{fill:var(--green)}
 .agentNode.state-idle .activityDot{opacity:.28}
 .agentNode.state-idle .stateRing{stroke-dasharray:2 6}
 .agentNode.state-active .stateRing{animation:agentPulse 1.8s ease-in-out infinite}
@@ -96,4 +94,4 @@
 @keyframes swarmDash{to{stroke-dashoffset:-22}}
 @keyframes agentPulse{50%{opacity:.28;filter:drop-shadow(0 0 2px var(--node))}}
 @keyframes warningPulse{50%{opacity:.5;filter:drop-shadow(0 0 9px var(--amber))}}
-@media(prefers-reduced-motion:reduce){.edgePath,.stateRing,.commandHalo,.activityDot,.nodeCore{animation:none!important}}
+@media(prefers-reduced-motion:reduce){.edgePath,.stateRing,.commandHalo,.commandOrbit,.activityDot,.nodeCore{animation:none!important}}
