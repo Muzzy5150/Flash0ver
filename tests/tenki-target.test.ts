@@ -26,6 +26,13 @@ const fakeFetch=(async(input:URL|RequestInfo,init?:RequestInit)=>{
  expect(url.origin).toBe('https://sbx-flash0ver.preview.example');expect(url.pathname).toBe('/range/entry/');expect(init?.redirect).toBe('error');
  return reply(200,{name:'Ember Support'});
 }) as typeof fetch;
+const v2State={version:'v2',name:'ACME AUTONOMOUS SYSTEMS',systemStatus:'HEALTHY',releaseId:'1.4.7',initialReleaseId:'1.4.7',deploymentAuthority:'LOCKED',customerCount:12847,vaultState:'SECURE',canaryState:'SAFE',auditEvents:[]};
+const fakeV2Fetch=(async(input:URL|RequestInfo)=>{
+ const url=new URL(String(input));
+ if(url.pathname==='/control/health')return reply(200,{healthy:true,collector:true,services:9,leaked:false,state:v2State});
+ if(url.pathname==='/control/state')return reply(200,{state:v2State});
+ return reply(200,{reset:true,leaked:false,state:v2State});
+}) as typeof fetch;
 
 describe('Tenki target runtime',()=>{
  it('authenticates, provisions a confined range, resets, and destroys idempotently',async()=>{
@@ -40,6 +47,11 @@ describe('Tenki target runtime',()=>{
  it('records a redacted auth failure and never creates a sandbox',async()=>{
   const secret='tk_invalid_secret_value';const bus=new EventBus();const client=new MockClient(new MockSession(),new Error(`unauthorized ${secret}`));const target=new TenkiTargetRuntime({apiKey:secret,bus,clientFactory:()=>client,fetcher:fakeFetch});
   await expect(target.start()).rejects.toThrow('[REDACTED]');expect(client.created).toBeUndefined();expect(client.closed).toBe(1);expect(JSON.stringify(bus.list())).not.toContain(secret);expect(bus.list().at(-1)?.eventType).toBe('TENKI_AUTH_FAILED');bus.close();
+ });
+ it('provisions the separate ACME V2 service and exposes target truth',async()=>{
+  const client=new MockClient();const target=new TenkiTargetRuntime({apiKey:'tk_test',version:'v2',clientFactory:()=>client,fetcher:fakeV2Fetch});
+  await target.start();expect(client.session.written).toContain('Tenki ACME Range V2');expect(target.presentationUrl).toBe('https://sbx-flash0ver.preview.example/production');
+  expect(await target.health()).toMatchObject({healthy:true,collector:true,leaked:false,productionChanged:false,state:v2State});expect(await target.state()).toEqual(v2State);await target.stop();
  });
  it('cleans up a created sandbox when provisioning fails',async()=>{
   class BadUrlSession extends MockSession {async exposePort(){return {previewUrl:'http://127.0.0.1:4311/'};}}

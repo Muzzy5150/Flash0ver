@@ -2,7 +2,7 @@ import { randomBytes,randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { TenkiSandbox } from '@tenkicloud/sandbox';
 import type { EventBus } from '../events/bus';
-import type { RangeReply,RangeRequest,TargetRuntime } from './types';
+import type { RangeReply,RangeRequest,RangeVersion,TargetRuntime,TargetState } from './types';
 import { validatePath } from './local';
 
 const RANGE_PORT=4311;
@@ -23,15 +23,18 @@ interface SessionLike {
  refresh?():Promise<void>;
 }
 interface ClientLike {whoAmI():Promise<{workspaces:unknown[]}>;create(options:Record<string,unknown>):Promise<SessionLike>;close():void;}
-export interface TenkiTargetOptions {apiKey:string;bus?:EventBus;clientFactory?:(apiKey:string)=>ClientLike;fetcher?:typeof fetch;}
+export interface TenkiTargetOptions {apiKey:string;version?:RangeVersion;bus?:EventBus;clientFactory?:(apiKey:string)=>ClientLike;fetcher?:typeof fetch;}
 
 export class TenkiTargetRuntime implements TargetRuntime {
  readonly kind='tenki' as const;
+ readonly version:RangeVersion;
+ presentationUrl?:string;
  identity='tenki · not initialized';
  private client?:ClientLike;private session?:SessionLike;private origin?:string;private sandboxId?:string;
  private brokerToken=randomBytes(32).toString('hex');private lifecycleRunId=`tenki-lifecycle-${randomUUID()}`;private stopPromise?:Promise<void>;
  private readonly fetcher:typeof fetch;private readonly clientFactory:(apiKey:string)=>ClientLike;
  constructor(private options:TenkiTargetOptions){
+  this.version=options.version??'v1';
   this.fetcher=options.fetcher??fetch;
   this.clientFactory=options.clientFactory??sdkClient;
   options.bus?.protect(options.apiKey);options.bus?.protect(this.brokerToken);
@@ -46,15 +49,17 @@ export class TenkiTargetRuntime implements TargetRuntime {
    this.emit('TENKI_AUTH_OK','Tenki API authentication succeeded',{durationMs:round(performance.now()-authStarted),status:'authenticated',workspaces:identity.workspaces.length});
    const createStarted=performance.now();
    this.session=await this.client.create({name:`flash0ver-${randomUUID().slice(0,8)}`,cpuCores:2,memoryMb:2048,diskSizeGb:5,allowInbound:true,allowOutbound:false,maxDurationMs:SESSION_DURATION_MS,idleTimeoutMinutes:15,waitReady:true,waitTimeoutMs:CREATE_TIMEOUT_MS,metadata:{project:'flash0ver',purpose:'authorized-disposable-range'},tags:['flash0ver','authorized-range']});
-   this.sandboxId=this.session.id;this.identity=`tenki sandbox ${this.sandboxId}`;
+   this.sandboxId=this.session.id;this.identity=`tenki sandbox ${this.sandboxId} · RANGE ${this.version.toUpperCase()}`;
    this.emit('TENKI_SANDBOX_CREATED','Disposable Tenki sandbox created',{sandboxId:this.sandboxId,durationMs:round(performance.now()-createStarted),status:'running'});
    const provisionStarted=performance.now();this.emit('TENKI_PROVISION_STARTED','Tenki range provisioning started',{sandboxId:this.sandboxId,status:'provisioning'});
    const command=await this.session.exec(['node','--version'],{timeoutMs:15_000});assertCommand(command,'harmless Node runtime check');
-   const source=await readFile(new URL('../../range/tenki/remote-range.mjs',import.meta.url),'utf8');
+   const sourceFile=this.version==='v2'?'../../range/tenki/remote-range-v2.mjs':'../../range/tenki/remote-range.mjs';
+   const source=await readFile(new URL(sourceFile,import.meta.url),'utf8');
    await this.session.writeFile('/home/tenki/flash0ver-range.mjs',source);
    const launched=await this.session.exec('sh',{args:['-c','node /home/tenki/flash0ver-range.mjs >/home/tenki/flash0ver-range.log 2>&1 &'],env:{FLASH0VER_BROKER_TOKEN:this.brokerToken,FLASH0VER_RANGE_PORT:String(RANGE_PORT)},timeoutMs:15_000});assertCommand(launched,'range service launch');
    const exposed=await this.session.exposePort(RANGE_PORT,{ttlMs:SESSION_DURATION_MS});
    this.origin=validateTenkiBaseUrl(exposed.previewUrl);
+   this.presentationUrl=this.version==='v2'?`${this.origin}/production`:undefined;
    await this.waitForHealth(AbortSignal.timeout(PROVISION_TIMEOUT_MS));
    this.emit('TENKI_PROVISION_READY','Tenki range provisioning completed',{sandboxId:this.sandboxId,durationMs:round(performance.now()-provisionStarted),lifecycleDurationMs:round(performance.now()-lifecycleStarted),status:'ready'});
   }catch(error){
@@ -74,9 +79,10 @@ export class TenkiTargetRuntime implements TargetRuntime {
  }
  async health(){
   const started=performance.now();
-  try{const reply=await this.control('/control/health','GET');return {healthy:reply.status===200&&reply.body.healthy===true&&reply.body.services===5,collector:reply.status===200&&reply.body.collector===true,leaked:reply.body.leaked===true};}
+  try{const reply=await this.control('/control/health','GET');const expected=this.version==='v2'?9:5;const state=isTargetState(reply.body.state)?reply.body.state:undefined;return {healthy:reply.status===200&&reply.body.healthy===true&&reply.body.services===expected,collector:reply.status===200&&reply.body.collector===true,leaked:reply.body.leaked===true,productionChanged:state?state.systemStatus==='COMPROMISED'||state.releaseId!==state.initialReleaseId:undefined,state};}
   catch(error){this.emit('TENKI_HEALTH_FAILED','Tenki range health check failed',{sandboxId:this.sandboxId,durationMs:round(performance.now()-started),status:'failed',error:this.safe(error)});throw error;}
  }
+ async state():Promise<TargetState>{if(this.version!=='v2')throw new Error('Target state is available only for Range V2');const reply=await this.control('/control/state','GET');if(reply.status!==200||!isTargetState(reply.body.state))throw new Error('Tenki ACME target returned invalid state');return reply.body.state;}
  async stop(){
   if(this.stopPromise)return this.stopPromise;
   this.stopPromise=this.destroy();await this.stopPromise;
@@ -84,7 +90,7 @@ export class TenkiTargetRuntime implements TargetRuntime {
  metadata(){return {kind:this.kind,sandboxId:this.sandboxId,origin:this.origin,status:this.session?'running':'stopped'};}
  private async destroy(){
   const session=this.session;const client=this.client;const sandboxId=this.sandboxId;const started=performance.now();
-  this.session=undefined;this.client=undefined;this.origin=undefined;
+  this.session=undefined;this.client=undefined;this.origin=undefined;this.presentationUrl=undefined;
   try{
    if(session){try{await session.unexposePort(RANGE_PORT);}catch{}await session.close();if(session.refresh){try{await session.refresh();}catch{}}this.emit('TENKI_SANDBOX_DESTROYED','Disposable Tenki sandbox destroyed',{sandboxId,durationMs:round(performance.now()-started),status:session.state==='TERMINATED'||session.state===undefined?'confirmed':'close-confirmed'});}
   }finally{client?.close();this.identity='tenki · stopped';}
@@ -115,3 +121,4 @@ function assertCommand(result:ExecResultLike,label:string){if(result.status!=='S
 async function parseReply(response:Response){const reply=await response.json() as RangeReply;if(!reply||typeof reply.status!=='number'||!reply.body||!Array.isArray(reply.facts))throw new Error('Tenki range returned an invalid response');return reply;}
 function delay(ms:number,signal:AbortSignal){return new Promise<void>((resolve,reject)=>{const timer=setTimeout(resolve,ms);signal.addEventListener('abort',()=>{clearTimeout(timer);reject(signal.reason);},{once:true});});}
 function round(value:number){return Math.round(value*100)/100;}
+function isTargetState(value:unknown):value is TargetState{return !!value&&typeof value==='object'&&(value as TargetState).version==='v2'&&typeof (value as TargetState).releaseId==='string'&&Array.isArray((value as TargetState).auditEvents);}
