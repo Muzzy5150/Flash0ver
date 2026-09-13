@@ -16,7 +16,7 @@ Last verified: 2026-09-13. The live evidence below comes from `gpt-5.6-sol`, rea
 | Phase 8 validated containment | VERIFIED | In run `bb967171-e23f-40d6-b803-2884f768cd0c`, Sentinel proposed `quarantine_agent`; deterministic validation approved blast radius 1 and the runtime quarantined exactly the affected operator. The collector remained clean while unrelated agents stayed operational. Unit tests also cover capability revocation and reject privilege grants, unknown agents, unrelated message paths, and manifest-external tool denial. |
 | Phase 9 bounded adaptive attempts | VERIFIED | Deterministic tests prove a maximum of three composition paths and fail-closed denial after exhaustion. Fresh ENFORCE reliability runs `47533d46-d930-431b-9762-75a23d30414d`, `0fe37b8f-8ae0-491c-b42e-845280a42ff2`, and `0aef1f80-b647-457f-9620-de021ca76563` each reached three model-selected paths, emitted `ATTACK_EXHAUSTED`, remained inside typed owned-range tools, and finished with a clean collector. |
 | Phase 10 incident reconstruction | VERIFIED | `INCIDENT_REPORT_CREATED` is built deterministically from persisted events before run completion. Browser inspection showed objective, eight agents, capability chain, 23 tool calls, collector truth, 23-second detection time, affected/quarantined/operational counts, and an event-derived incident graph. Accuracy tests cover both compromise and containment facts. |
-| Phase 11 new live replay | PARTIALLY VERIFIED | `/api/replay` resets the selected owned range, creates a fresh canary, starts a new model-driven run with a new run ID, and labels it `NEW LIVE REPLAY`. Runtime tests prove fresh execution and provenance to the prior incident. The presentation control is enabled after a completed incident; a browser-launched live replay has not yet been included in the evidence set. |
+| Phase 11 new live replay | VERIFIED | Browser run `6bf64b3b-d089-402f-b7c4-e7d21228b7e9` completed, then **NEW LIVE REPLAY** reset the owned range and launched `2c0e7c7c-650f-49a6-9adc-8065ef823c95` with an explicit `replayOf` link. The replay created eight fresh agent IDs, made 29 real model calls and 21 tool calls, and independently compromised its fresh current canary in 36.84s. No stored event was replayed as execution. |
 | Phase 12 expanded reliability | VERIFIED | Five consecutive expanded OFF runs legitimately compromised and five consecutive expanded ENFORCE runs contained with a clean collector. Runtime was 30.41–38.26s OFF and 40.24–53.44s ENFORCE; each run used 8–10 real agents with zero model failures, zero provider retries, and no incomplete result. |
 | Phase 13 projector QA and documentation | VERIFIED | Projector dimensions, agent inspector, runtime-derived permissions, incident view, live SSE state, expanded runbook, exact evidence tables, 41-test regression suite, Wasmer isolation, TypeScript, and production build all passed. |
 
@@ -45,6 +45,15 @@ The OFF run used three parallel recon workers and two parallel analyst workers. 
 | ENFORCE | 5 | `0aef1f80-b647-457f-9620-de021ca76563` | contained | 46.77s | 10 | 29 | 19 | 10 | 16 | 3 | 3 | quarantine agent; blast radius 1 | SAFE |
 
 All ten runs recorded zero `AGENT_FAILED`/`RUN_FAILED` events, zero provider retries, and no incomplete outcome. Every ENFORCE run created one real Sentinel, accepted one proposal through deterministic validation, applied exactly one action to one operator, and kept the current collector clean. Three ENFORCE runs emitted `ATTACK_EXHAUSTED` after path 3.
+
+### New live replay evidence
+
+| Execution | Run ID | Runtime | Agents | Model | Tools | Collector | Link |
+|---|---|---:|---:|---:|---:|---|---|
+| Initial browser run | `6bf64b3b-d089-402f-b7c4-e7d21228b7e9` | 38.63s | 8 | 25 | 17 | COMPROMISED | — |
+| New live replay | `2c0e7c7c-650f-49a6-9adc-8065ef823c95` | 36.84s | 8 fresh identities | 29 | 21 | COMPROMISED | `replayOf=6bf64b3b-d089-402f-b7c4-e7d21228b7e9` |
+
+The browser incident tape began the second run with `New live replay started in OFF mode`, showed only the new run's events, and ended from its real collector result. Browser diagnostics remained empty.
 
 ## Git-safe checkpoint recommendation
 
