@@ -2,6 +2,14 @@
 
 Last verified: 2026-09-12. The live evidence below comes from `gpt-5.6-sol`, real Wasmer gates, fresh localhost range generations, and the project-owned collector.
 
+## Swarm expansion
+
+| Area | Status | Actual evidence |
+|---|---|---|
+| Phase 1 architecture inspection | VERIFIED | The `tenki-verified-v1` baseline was inspected on the clean `swarm-expansion` branch. The provider, policy, target, collector, Wasmer, event store, and SSE boundaries remain unchanged. The implementation map is recorded in `docs/SWARM_EXPANSION_MAP.md`. |
+| Phase 2 multi-worker runtime | NOT IMPLEMENTED | Bounded parallel delegation and expanded-profile runtime verification are the next change. |
+| Phases 3–13 | NOT IMPLEMENTED | Telemetry, incident tape, graph upgrade, emergent capability view, Sentinel, containment, adaptive attempts, reconstruction, live rerun, reliability, projector QA, and final documentation have not yet been verified on this branch. |
+
 ## Git-safe checkpoint recommendation
 
 The locked stage/demo baseline is recoverable at commit `bc342d8` (`harden Flash0ver live demo`), tagged `demo-final-v1` on `main`. This work remains unmerged on `tenki-integration`. `.env`, `data/`, `.wasmer/`, and `.next/` remain excluded through `.gitignore`; no credential or runtime database entered the branch.
