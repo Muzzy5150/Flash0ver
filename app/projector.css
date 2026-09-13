@@ -1,8 +1,9 @@
 @media (min-width: 1151px) {
   main {
-    min-height: 680px;
+    height: 100dvh;
+    min-height: 0;
     padding: 10px;
-    grid-template-rows: 64px 64px 30px minmax(280px, 1fr) 150px;
+    grid-template-rows: 64px 64px 30px minmax(230px, 1fr) 210px;
     gap: 6px;
   }
 
@@ -13,7 +14,7 @@
 
   .presenting {
     padding: 7px;
-    grid-template-rows: 64px 68px 30px minmax(280px, 1fr) 150px;
+    grid-template-rows: 64px 68px 30px minmax(220px, 1fr) 225px;
   }
 
   main.comparing,
