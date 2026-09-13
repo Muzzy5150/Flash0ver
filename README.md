@@ -57,8 +57,7 @@ With enforcement **OFF**, cross-team evidence can compose into synthetic product
 
 Agent-directed execution is isolated with **Wasmer**. Tenki provides disposable target infrastructure. The post-run **After Action Report** reconstructs the incident from persisted runtime telemetry, including agent contributions, communications, evidence handoffs, deception events, policy decisions, target effects, and containment actions.
 
-> [!NOTE]
-> FLASH0VER is a defensive security research project. Adversarial behavior is confined to localhost, Wasmer sandboxes, and project-owned disposable Tenki environments. Synthetic credentials, canaries, identities, and customer records have no value outside the range.
+Built for real, verifiable agent-security research. FLASH0VER runs model-driven swarms against disposable ACME environments, records source-backed evidence for every action, and proves outcomes through independent target state and collector telemetry.
 
 ## What It Does
 
