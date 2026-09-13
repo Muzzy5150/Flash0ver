@@ -20,7 +20,7 @@ Open `http://127.0.0.1:3000`, run preflight, and require MODEL, WASMER, DATABASE
 | 1:50–2:40 | Follow the same team composition and the denied deployment edge. | “Ordinary investigation continues. At the sensitive operation, FLASH0VER evaluates the requesting agent, capability chain, and provenance path together.” |
 | 2:40–3:00 | Show **EMERGENT CAPABILITY BLOCKED**, then ACME still HEALTHY. | “The collector is clean and production never changed. Every individual permission was legitimate. The dangerous capability emerged between the agents. Flash0ver secures the swarm, not just the agents.” |
 
-Measured local V2 runs were 71.235s OFF and 75.600s ENFORCE. Treat those as evidence, not countdowns. If the model takes longer, continue narrating only current real events. Do not announce compromise until both `TARGET_STATE_CHANGED` and `CANARY_LEAK` exist. Do not announce protection until the run finishes with `TARGET_PROTECTED`, unchanged production, and a clean collector. Tenki V2 is not yet verified; use local for the V2 presentation.
+Three consecutive local V2 OFF runs completed in 66.923–82.718s; three consecutive ENFORCE runs completed in 65.135–69.906s. Treat those as evidence, not countdowns. If the model takes longer, continue narrating only current real events. Do not announce compromise until both `TARGET_STATE_CHANGED` and `CANARY_LEAK` exist. Do not announce protection until the run finishes with `TARGET_PROTECTED`, unchanged production, and a clean collector. Tenki V2 is not yet verified; use local for the V2 presentation.
 
 ## Expanded autonomous EDR/SOC presentation
 

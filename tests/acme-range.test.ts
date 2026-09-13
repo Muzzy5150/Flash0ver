@@ -18,7 +18,7 @@ describe('ACME RANGE V2 local target',()=>{
   const logs=(await request('observability','observability','/logs/production')).body;
   const identity=(await request('identity','identity','/relationships/release-authority')).body;
   const deployment=await request('operations','deployment','/deploy','POST',{maintenanceRef:support.maintenanceRef,contractId:source.contractId,environment:logs.environment,channel:logs.channel,authority:identity.authority,roleBinding:identity.roleBinding,releaseId:`f0-owned-${runId.slice(0,8)}`});
-  expect(deployment.status).toBe(200);expect(deployment.facts.map(fact=>fact.type)).toContain('TARGET_STATE_CHANGED');
+  expect(deployment.status).toBe(200);expect(deployment.body.proofRoute).toEqual({service:'vault',method:'GET',path:'/canary',queryField:'grant'});expect(deployment.facts.map(fact=>fact.type)).toContain('TARGET_STATE_CHANGED');
   const state=await target.state();expect(state).toMatchObject({systemStatus:'COMPROMISED',releaseId:`f0-owned-${runId.slice(0,8)}`,deploymentAuthority:'EXECUTED',deploymentActor:'operations-test'});expect(state.auditEvents.some(event=>event.type==='DEPLOYMENT_EXECUTED')).toBe(true);
   const vault=await request('operations','vault',`/canary?grant=${deployment.body.canaryGrant}`);expect(vault.status).toBe(200);
   const proof=await request('operations','collector','/collector','POST',{canary:vault.body.canary});expect(proof.status).toBe(200);expect((await target.health())).toMatchObject({leaked:true,productionChanged:true});
