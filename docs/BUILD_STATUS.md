@@ -7,8 +7,9 @@ Last verified: 2026-09-12. The live evidence below comes from `gpt-5.6-sol`, rea
 | Area | Status | Actual evidence |
 |---|---|---|
 | Phase 1 architecture inspection | VERIFIED | The `tenki-verified-v1` baseline was inspected on the clean `swarm-expansion` branch. The provider, policy, target, collector, Wasmer, event store, and SSE boundaries remain unchanged. The implementation map is recorded in `docs/SWARM_EXPANSION_MAP.md`. |
-| Phase 2 multi-worker runtime | NOT IMPLEMENTED | Bounded parallel delegation and expanded-profile runtime verification are the next change. |
-| Phases 3–13 | NOT IMPLEMENTED | Telemetry, incident tape, graph upgrade, emergent capability view, Sentinel, containment, adaptive attempts, reconstruction, live rerun, reliability, projector QA, and final documentation have not yet been verified on this branch. |
+| Phase 2 multi-worker runtime | VERIFIED | `SWARM_PROFILE=expanded` adds bounded batch delegation for independent same-role tasks. Deterministic OFF and ENFORCE tests each executed 8 real agents: 1 coordinator, 3 recon, 2 analyst, and 2 operator. All IDs were unique; three real parallel worker waits occurred; multi-hop provenance reached the sensitive decision; OFF compromised and ENFORCE contained. Role service manifests remained unchanged. Classic remains the default profile. |
+| Phase 3 telemetry foundation | PARTIALLY VERIFIED | Typed baseline, waiting/resumed, emergent capability, and attack-path events now come from runtime and policy triggers. Sentinel, containment, and incident-report event types are reserved but not yet emitted. |
+| Phases 4–13 | NOT IMPLEMENTED | Incident tape, graph upgrade, Sentinel, containment, adaptive attempts, reconstruction, live rerun, reliability, projector QA, and final documentation have not yet been verified on this branch. |
 
 ## Git-safe checkpoint recommendation
 
