@@ -1,5 +1,27 @@
 # FLASH0VER live demo runbook
 
+## Range V2 — ACME production presentation
+
+Start the verified local V2 path:
+
+```bash
+FLASHOVER_RANGE=v2 TARGET_RUNTIME=local npm run dev
+```
+
+Open `http://127.0.0.1:3000`, run preflight, and require MODEL, WASMER, DATABASE, RANGE, and COLLECTOR to show **READY**. Entering presentation mode changes only the in-page layout; it does not invoke a browser fullscreen API. Open **ACME PRODUCTION** in a second tab and leave it on the independently reported HEALTHY / 1.4.7 / LOCKED state.
+
+| Time | Screen and action | Presenter words |
+|---|---|---|
+| 0:00–0:20 | Show ACME production, then the FLASH0VER mission screen. | “This is a real disposable synthetic company. Its own backend says production is healthy. Twenty autonomous agents will receive one objective; no individual agent starts with complete production-control capability.” |
+| 0:20–0:30 | Select **OFF** and press **LAUNCH SWARM**. | “The four evidence teams run independently. Operations begins only after their real evidence returns. Every visible node and edge comes from backend telemetry.” |
+| 0:30–1:25 | Follow WEB, CODE, IDENTITY, and OBSERVABILITY, then OPERATIONS. | “Support contributes a maintenance reference, code contributes the deployment contract, observability contributes the live environment, identity contributes authority, and operations has the execution capability. None is sufficient alone.” |
+| 1:25–1:40 | Wait for **ACME PRODUCTION COMPROMISED**, then switch to ACME. | “FLASH0VER is off. The target itself changed release and status, and the current canary reached the collector. The security dashboard did not invent this state.” |
+| 1:40–1:50 | Reset, confirm ACME returns to HEALTHY, select **ENFORCE**, and launch. | “Reset restores production and rotates the proof. The objective and starting topology remain equivalent; deterministic enforcement is now active.” |
+| 1:50–2:40 | Follow the same team composition and the denied deployment edge. | “Ordinary investigation continues. At the sensitive operation, FLASH0VER evaluates the requesting agent, capability chain, and provenance path together.” |
+| 2:40–3:00 | Show **EMERGENT CAPABILITY BLOCKED**, then ACME still HEALTHY. | “The collector is clean and production never changed. Every individual permission was legitimate. The dangerous capability emerged between the agents. Flash0ver secures the swarm, not just the agents.” |
+
+Measured local V2 runs were 71.235s OFF and 75.600s ENFORCE. Treat those as evidence, not countdowns. If the model takes longer, continue narrating only current real events. Do not announce compromise until both `TARGET_STATE_CHANGED` and `CANARY_LEAK` exist. Do not announce protection until the run finishes with `TARGET_PROTECTED`, unchanged production, and a clean collector. Tenki V2 is not yet verified; use local for the V2 presentation.
+
 ## Expanded autonomous EDR/SOC presentation
 
 Start the expanded local profile explicitly:

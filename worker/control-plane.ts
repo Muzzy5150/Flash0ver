@@ -24,7 +24,8 @@ const server=createServer(async(req,res)=>{
   const url=new URL(req.url||'/','http://localhost');setHeaders(res);
   if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}
   if(req.method==='GET'&&url.pathname==='/api/events')return streamEvents(res,url.searchParams.get('runId')||undefined,Number(url.searchParams.get('after')||0));
-  if(req.method==='GET'&&url.pathname==='/api/state')return json(res,200,state());
+  if(req.method==='GET'&&url.pathname==='/api/state')return json(res,200,await state());
+  if(req.method==='GET'&&url.pathname==='/api/target')return json(res,200,await targetState());
   if(req.method==='GET'&&url.pathname==='/api/preflight')return json(res,200,{checks:await refreshPreflight(true)});
   if(req.method==='POST'&&url.pathname==='/api/mode'){if(active)return json(res,409,{error:'Mode cannot change while a run is active'});mode=z.object({mode:z.enum(['OFF','MONITOR','ENFORCE'])}).parse(await body(req)).mode;return json(res,200,{mode});}
   if(req.method==='POST'&&url.pathname==='/api/run'){
@@ -44,7 +45,8 @@ const server=createServer(async(req,res)=>{
   return json(res,404,{error:'Route not found'});
  } catch(error){return json(res,400,{error:error instanceof Error?error.message:'Request failed'});}
 });
-function state(){const events=bus.list().slice(-5000);return {mode,active,currentRunId,preflight,events,agents:[...runtime.agents.values()],target:target.identity};}
+async function targetState(){return {identity:target.identity,version:target.version??'v1',presentationUrl:target.presentationUrl,state:target.state?await target.state():undefined};}
+async function state(){const events=bus.list().slice(-5000);return {mode,active,currentRunId,preflight,events,agents:[...runtime.agents.values()],target:await targetState()};}
 function streamEvents(res:ServerResponse,runId?:string,after=0){res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache, no-transform',connection:'keep-alive','x-accel-buffering':'no'});res.write(': connected\n\n');for(const event of bus.list(runId,after))res.write(`id: ${event.sequence}\ndata: ${JSON.stringify(event)}\n\n`);const unsub=bus.subscribe(event=>{if(!runId||event.runId===runId)res.write(`id: ${event.sequence}\ndata: ${JSON.stringify(event)}\n\n`);});const heartbeat=setInterval(()=>res.write(': heartbeat\n\n'),15000);res.on('close',()=>{clearInterval(heartbeat);unsub();});}
 async function body(req:IncomingMessage){let text='';for await(const chunk of req){text+=chunk;if(Buffer.byteLength(text)>16384)throw new Error('Body too large');}return text?JSON.parse(text):{};}
 function setHeaders(res:ServerResponse){res.setHeader('access-control-allow-origin','http://127.0.0.1:3000');res.setHeader('access-control-allow-methods','GET,POST,OPTIONS');res.setHeader('access-control-allow-headers','content-type');res.setHeader('x-content-type-options','nosniff');}

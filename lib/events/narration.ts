@@ -21,6 +21,8 @@ export function narrateEvent(event:RuntimeEvent):IncidentLine|null{
   case 'CAPABILITY_REVOKED':case 'AGENT_QUARANTINED':case 'MESSAGE_BLOCKED':case 'CONTAINMENT_APPLIED':case 'ATTACK_EXHAUSTED':category='containment';break;
   case 'CANARY_LEAK':category='outcome';text='current canary received by collector';break;
   case 'CANARY_SAFE':category='containment';text='collector confirmed current run clean';break;
+  case 'TARGET_STATE_CHANGED':category='outcome';text='ACME production deployment executed — target state changed';break;
+  case 'TARGET_PROTECTED':category='containment';text='ACME production remained healthy and unchanged';break;
   default:if(!VISIBLE.has(event.eventType))return null;
  }
  return {sourceEventId:event.id,timestamp:event.timestamp,actor,category,text};
