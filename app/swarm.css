@@ -95,3 +95,16 @@
 @keyframes agentPulse{50%{opacity:.28;filter:drop-shadow(0 0 2px var(--node))}}
 @keyframes warningPulse{50%{opacity:.5;filter:drop-shadow(0 0 9px var(--amber))}}
 @media(prefers-reduced-motion:reduce){.edgePath,.stateRing,.commandHalo,.commandOrbit,.activityDot,.nodeCore{animation:none!important}}
+
+/* Command-map readability: retain context while making the telemetry focus crisp. */
+.incidentCommand .edgePath{stroke-width:1.55;opacity:.68}
+.incidentCommand .edgeAura{stroke-width:7;filter:blur(1.1px)}
+.incidentCommand .edge.focused .edgePath{stroke-width:3.5;opacity:1;filter:drop-shadow(0 0 3px currentColor)}
+.incidentCommand .edge.focused .edgeAura{opacity:.18}
+.incidentCommand .edge.dimmed .edgePath{opacity:.3}
+.incidentCommand .agentNode.dimmed,.incidentCommand .serviceNode.dimmed{opacity:.64}
+.incidentCommand .agentNode.focused .nodeCore,.incidentCommand .serviceNode.focused .serviceFrame{filter:drop-shadow(0 0 6px currentColor)}
+.incidentCommand .agentNode .role{font-size:15px;letter-spacing:.4px}.incidentCommand .agentNode.role-coordinator .role,.incidentCommand .agentNode.role-lead .role{font-size:16px}
+.incidentCommand .agentNode .stateChip text{font-size:8px}.incidentCommand .agentNode .nodeId{font-size:8.5px}.incidentCommand .agentNode .microTelemetry{font-size:9px}
+.incidentCommand .serviceNode text{font-size:12px}.incidentCommand .architecture .columnLabel{font-size:10px}.incidentCommand .teamLane text{font-size:9px}
+.incidentCommand .swarmMap .legend span{font-size:8px}
