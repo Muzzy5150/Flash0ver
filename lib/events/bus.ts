@@ -16,7 +16,7 @@ export class EventBus {
     this.emitter.setMaxListeners(50);
   }
   protect(value:string) { if(value) this.secrets.add(value); }
-  redact(value:string) { for(const secret of this.secrets) value=value.split(secret).join('[REDACTED]'); return value.replace(/f0_canary_[a-f0-9]+/g,'[CANARY REDACTED]').replace(/sk-[A-Za-z0-9_-]{12,}/g,'[API KEY REDACTED]'); }
+  redact(value:string) { for(const secret of this.secrets) value=value.split(secret).join('[REDACTED]'); return value.replace(/f0_canary_[a-f0-9]+/g,'[CANARY REDACTED]').replace(/(?:decoy|tripwire)_[a-f0-9]+/gi,'[DECEPTION VALUE REDACTED]').replace(/sk-[A-Za-z0-9_-]{12,}/g,'[API KEY REDACTED]'); }
   emit(input:EventInput):RuntimeEvent {
     const started=performance.now();
     const event=EventSchema.parse(JSON.parse(this.redact(JSON.stringify({...input,data:input.data??{},id:randomUUID(),sequence:++this.sequence,timestamp:new Date().toISOString()}))));

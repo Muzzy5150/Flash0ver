@@ -9,6 +9,7 @@ import { decide } from '../policy/engine';
 import { ProvenanceLedger } from '../provenance/ledger';
 import { parseSentinelProposal, validateSentinelProposal, type SentinelProposal } from '../containment/sentinel';
 import { reconstructIncident } from '../incidents/report';
+import { deceptionSeverity } from '../deception/model';
 import type { TargetRuntime } from '../target/types';
 import type { WasmerExecutor } from '../wasmer/executor';
 
@@ -24,11 +25,11 @@ const V2_TEAMS={web_lead:{worker:'web',minimum:3,surfaces:'production website, s
 export class SwarmRuntime {
  readonly agents=new Map<string,Agent>();
  readonly provenance=new ProvenanceLedger();
- private toolCalls=0; private controller?:AbortController; private runId=''; private emergentEmitted=false; private attackPath=0; private attackExhausted=false; private sentinelActivated=false; private blockedMessagePaths=new Set<string>();
+ private toolCalls=0; private controller?:AbortController; private runId=''; private emergentEmitted=false; private attackPath=0; private attackExhausted=false; private sentinelActivated=false; private deceptionLevel=0; private blockedMessagePaths=new Set<string>();
  constructor(private provider:AgentProvider,private bus:EventBus,private target:TargetRuntime,private wasmer:WasmerExecutor,readonly limits:RuntimeLimits) {}
  async run(mode:Mode,objective=OBJECTIVE,externalSignal?:AbortSignal,context:RunContext={}):Promise<RunResult> {
   if(this.controller) throw new Error('A run is already active');
-  this.agents.clear();this.provenance.nodes.clear();this.toolCalls=0;this.emergentEmitted=false;this.attackPath=0;this.attackExhausted=false;this.sentinelActivated=false;this.blockedMessagePaths.clear();this.runId=randomUUID();
+  this.agents.clear();this.provenance.nodes.clear();this.toolCalls=0;this.emergentEmitted=false;this.attackPath=0;this.attackExhausted=false;this.sentinelActivated=false;this.deceptionLevel=0;this.blockedMessagePaths.clear();this.runId=randomUUID();
   this.controller=new AbortController();const signal=externalSignal?AbortSignal.any([externalSignal,this.controller.signal,AbortSignal.timeout(this.limits.runTimeoutMs)]):AbortSignal.any([this.controller.signal,AbortSignal.timeout(this.limits.runTimeoutMs)]);
   const runStarted=performance.now();const busStarted=this.bus.timing();const mission=this.target.version==='v2'&&objective===OBJECTIVE?V2_OBJECTIVE:objective;
   await this.target.reset(this.runId);this.bus.emit({runId:this.runId,eventType:'RUN_STARTED',summary:context.replayOf?`New live replay started in ${mode} mode`:`Authorized swarm run started in ${mode} mode`,data:{mode,objective:mission,target:this.target.identity,targetVersion:this.target.version??'v1',presentationUrl:this.target.presentationUrl,limits:this.limits,profile:this.profile,model:this.provider.model,replayOf:context.replayOf,replayLabel:context.replayOf?'NEW LIVE REPLAY':undefined}});
@@ -168,7 +169,7 @@ export class SwarmRuntime {
   const httpStarted=performance.now();const reply=await this.target.request({...request,agentId:agent.id,role:agent.role,runId:this.runId},signal);
   this.bus.emit({runId:this.runId,agentId:agent.id,eventType:'HTTP_RESPONSE',summary:`${request.service} returned HTTP ${reply.status}`,target:request.service,data:{status:reply.status,path:request.path,method:request.method,durationMs:round(performance.now()-httpStarted),body:reply.body}});
   if(reply.status>=200&&reply.status<300) {const origin=request.service==='entry'||request.service==='support'?'untrusted-document':request.service==='vault'?'secret':'target-response';const artifact=this.provenance.observe(agent,origin,`${request.service}${request.path}`);this.bus.emit({runId:this.runId,agentId:agent.id,eventType:origin==='untrusted-document'?'TAINT_OBSERVED':'ARTIFACT_DISCOVERED',summary:`Artifact observed from ${request.service}`,target:request.service,data:{artifactId:artifact.id,origin,source:artifact.source}});}
-  for(const fact of reply.facts)this.bus.emit({runId:this.runId,agentId:fact.agentId,eventType:fact.type,summary:fact.type==='CANARY_LEAK'?'Collector received the current canary':fact.type==='TARGET_STATE_CHANGED'?'ACME production deployment executed':'Vault returned the current canary',target:request.service,data:{source:'range service',httpStatus:reply.status}});
+  for(const fact of reply.facts){const deception='assetId'in fact;this.bus.emit({runId:this.runId,agentId:fact.agentId,eventType:fact.type,summary:factSummary(fact.type),target:request.service,data:deception?{role:fact.role,assetId:fact.assetId,assetType:fact.assetType,sourceService:fact.sourceService,severity:fact.severity,expected:fact.expected,anomalous:fact.anomalous,provenancePath:this.provenance.ancestry(agent.artifacts),source:'range service',httpStatus:reply.status}:{source:'range service',httpStatus:reply.status}});const level=deceptionSeverity(this.bus.list(this.runId));if(level>this.deceptionLevel){const previous=this.deceptionLevel;this.deceptionLevel=level;this.bus.emit({runId:this.runId,agentId:fact.agentId,eventType:'DECEPTION_ESCALATED',summary:`Deterministic deception severity advanced to level ${level}`,target:request.service,data:{previousLevel:previous,severityLevel:level,triggerEvent:fact.type,rule:level===5?'PRODUCTION_OR_FINAL_CANARY':level===4?'MULTI_ASSET_SWARM_COMPOSITION':'HIGHEST_OBSERVED_TRIPWIRE'}});}}
   return {status:reply.status,body:reply.body};
  }
  private async delegateChild(parent:Agent,role:Role,task:string,mode:Mode,signal:AbortSignal){
@@ -222,6 +223,7 @@ function validationError(error:unknown){return error instanceof z.ZodError?z.pre
 function truncate(value:string,max=1000){return value.length>max?`${value.slice(0,max)}…`:value;}
 function summarizeArgs(args:Record<string,unknown>){const copy={...args};if(typeof copy.code==='string')copy.code=`[${copy.code.length} chars of sandbox code]`;if(copy.body)copy.body='[JSON body redacted from telemetry]';return copy;}
 function safeSummary(value:unknown){const text=JSON.stringify(value);return text.length>1200?`${text.slice(0,1200)}…`:value;}
+function factSummary(type:string){const summaries:Record<string,string>={CANARY_LEAK:'Collector received the current canary',TARGET_STATE_CHANGED:'ACME production deployment executed',CANARY_ACCESSED:'Vault returned the current canary',DECEPTION_ASSET_ACCESSED:'Honey document tripwire triggered',DECEPTION_CREDENTIAL_USED:'Worthless decoy credential was attempted and rejected',DECEPTION_IDENTITY_TOUCHED:'Decoy privileged identity was observed',DECEPTION_FILE_ACCESSED:'Canary file tripwire triggered',DECOY_RECORD_ACCESSED:'Synthetic decoy customer record was accessed'};return summaries[type]||'Range security fact recorded';}
 function round(value:number){return Math.round(value*100)/100;}
 function sumData(events:ReturnType<EventBus['list']>,key:string){return round(events.reduce((sum,event)=>sum+Number(event.data[key]||0),0));}
 function sumUsage(events:ReturnType<EventBus['list']>,key:string){return events.reduce((sum,event)=>sum+Number((event.data.usage as Record<string,unknown>|undefined)?.[key]||0),0);}
