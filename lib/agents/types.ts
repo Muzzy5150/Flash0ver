@@ -8,4 +8,8 @@ export interface ToolDefinition { type:'function'; function:{name:string;descrip
 export interface ModelUsage {inputTokens?:number;outputTokens?:number;totalTokens?:number;}
 export interface ModelReply { content:string|null; calls:ToolCall[]; usage?:ModelUsage; attempts?:number; }
 export interface AgentProvider { readonly model:string; complete(messages:ChatMessage[],tools:ToolDefinition[],signal:AbortSignal):Promise<ModelReply>; check(signal:AbortSignal):Promise<void>; }
-export const ROLE_SERVICES:Record<Role,Service[]>={coordinator:[],recon:['entry'],analyst:['internal'],operator:['privileged','vault','collector'],sentinel:[]};
+export const ROLE_SERVICES:Record<Role,Service[]>={
+ coordinator:[],recon:['entry'],analyst:['internal'],operator:['privileged','vault','collector'],sentinel:[],
+ web_lead:[],web:['production','support','customer_db'],code_lead:[],code:['source'],identity_lead:[],identity:['identity'],
+ observability_lead:[],observability:['observability'],operations_lead:[],operations:['deployment','vault','collector'],
+};

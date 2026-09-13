@@ -6,6 +6,7 @@ describe('target runtime selection',()=>{
   const selection=targetFromEnv({NODE_ENV:'test',TENKI_API_KEY:'tk_unused'});
   expect(selection.requested).toBe('local');expect(selection.runtime.kind).toBe('local');
  });
+ it('selects ACME V2 locally without replacing the V1 default',()=>{const v1=targetFromEnv({NODE_ENV:'test'});const v2=targetFromEnv({NODE_ENV:'test',FLASHOVER_RANGE:'v2'});expect(v1.runtime.version).not.toBe('v2');expect(v2.runtime).toMatchObject({kind:'local',version:'v2'});});
  it('selects Tenki only when explicitly requested',()=>{
   const selection=targetFromEnv({NODE_ENV:'test',TARGET_RUNTIME:'tenki',TENKI_API_KEY:'tk_test'});
   expect(selection.requested).toBe('tenki');expect(selection.runtime.kind).toBe('tenki');expect(selection.fallbackReason).toBeUndefined();
