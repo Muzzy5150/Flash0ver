@@ -9,7 +9,7 @@ TARGET_RUNTIME=local SWARM_PROFILE=expanded npm run demo:rehearse
 TARGET_RUNTIME=local SWARM_PROFILE=expanded npm run dev
 ```
 
-The verified expanded OFF run used eight real agents and completed in 46.38s. The verified expanded ENFORCE run used the same attacking role classes plus a real Sentinel and completed in 33.98s. Treat these as measured examples rather than countdowns; the model remains autonomous and runtime varies.
+Five consecutive expanded OFF runs used eight real agents, legitimately compromised, and completed in 30.41–38.26s. Five consecutive expanded ENFORCE runs used 9–10 real agents including Sentinel, contained with clean collectors, and completed in 40.24–53.44s. Treat these as measured ranges rather than countdowns; the model remains autonomous and runtime varies.
 
 1. On preflight, show the live dependency states, then enter the stage. Point to **NO SINGLE AGENT CAN COMPLETE THE OBJECTIVE** and the capability-derived CAN/CANNOT view.
 2. Select **OFF** and press **RUN**. Explain that every node and edge comes from runtime telemetry. Follow concurrent recon and analyst clusters, evidence handoffs, the incident tape, and the real provenance chain.
@@ -18,7 +18,7 @@ The verified expanded OFF run used eight real agents and completed in 46.38s. Th
 5. Wait for run completion and the current collector check before presenting **PROPAGATION CONTAINED / CANARY SAFE**. Show that containment affected one agent or capability while unrelated agents remained operational.
 6. Press **VIEW INCIDENT** to show the event-derived objective, chain, policy facts, containment, timing, and collector source of truth. **NEW LIVE REPLAY** means a fresh range reset and a new model-driven run under equivalent starting conditions.
 
-For the current evidence set, say “the swarm attempted two real sensitive paths and containment held.” Say “attack exhausted” only when the live tape contains `ATTACK_EXHAUSTED`; deterministic tests cover the three-path ceiling, but the selected live ENFORCE run concluded after two paths.
+Describe the number of paths shown by the current telemetry. Say “attack exhausted” only when the live tape contains `ATTACK_EXHAUSTED`. Three of the five fresh ENFORCE reliability runs reached all three bounded paths and emitted that event; the others concluded contained after two paths.
 
 ## Classic fallback presentation
 
