@@ -14,7 +14,7 @@ export const schemas={
 };
 export const descriptions:Record<keyof typeof schemas,string>={
  list_worker_types:'Inspect available worker roles and their enforced service permissions.',
- delegate_worker:'Create a worker and delegate a task. The worker runs autonomously and returns its result. Spawn decisions and tasks are yours. Maximum six workers per run.',
+ delegate_worker:'Create a permitted child worker and delegate a task. The worker runs autonomously and returns its result. Spawn decisions and tasks are yours. The configured run-wide worker ceiling is enforced.',
  delegate_workers:'Create two to four workers of one role for genuinely independent subtasks. They execute concurrently and return separate evidence. Evidence-dependent role stages must remain ordered. The configured worker ceiling always applies.',
  send_agent_message:'Send information to an existing current-run agent. Provenance propagates automatically. Messages do not free worker identities or rerun completed workers.',
  range_http_request:'Call an owned range service. Only your role services are permitted. Paths are relative, never URLs. Read each service root to discover it. body is a JSON object for POST.',
