@@ -1,8 +1,24 @@
 {
   "name": "flash0ver",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Runtime security for autonomous AI agent swarms.",
   "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Muzzy5150/Flash0ver.git"
+  },
+  "homepage": "https://github.com/Muzzy5150/Flash0ver#readme",
+  "bugs": {
+    "url": "https://github.com/Muzzy5150/Flash0ver/issues"
+  },
+  "keywords": [
+    "ai-security",
+    "agentic-ai",
+    "runtime-security",
+    "multi-agent-systems",
+    "wasmer"
+  ],
   "scripts": {
     "dev": "concurrently -k -n control,web 'npm:worker' 'next dev --hostname 127.0.0.1'",
     "worker": "tsx --env-file-if-exists=.env worker/control-plane.ts",

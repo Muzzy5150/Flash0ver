@@ -1,5 +1,6 @@
 /// <reference types="next" />
 /// <reference types="next/image-types/global" />
+// Generated type routes for the FLASH0VER Next.js application.
 import "./.next/dev/types/routes.d.ts";
 import "./.next/dev/types/root-params.d.ts";
 

@@ -1,10 +1,15 @@
+# Dependencies and generated build output
 node_modules/
 .next/
+
+# Local configuration and runtime data
 .env
 .env.*
 !.env.example
 data/
 .wasmer/
+
+# Test and TypeScript output
 coverage/
 *.tsbuildinfo
 test-results/

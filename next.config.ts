@@ -1,4 +1,6 @@
 import type { NextConfig } from 'next';
+
+// Keep browser traffic on localhost while the control plane owns runtime APIs.
 const config: NextConfig = {
   agentRules: false,
   turbopack: { root: process.cwd() },
