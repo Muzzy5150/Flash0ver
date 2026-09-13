@@ -1,7 +1,7 @@
 import type { Role, Service } from '../events/schema';
 export type AgentState='created'|'running'|'waiting'|'suspicious'|'blocked'|'finished'|'failed'|'quarantined'|'terminated';
 export interface Provenance { id:string; origin:'untrusted-document'|'target-response'|'agent-message'|'derived-artifact'|'secret'; source:string; parents:string[]; agentId:string; }
-export interface Agent { id:string; role:Role; parent?:string; state:AgentState; services:Service[]; tools:string[]; artifacts:string[]; steps:number; model:string; messages:{from:string;content:string;provenance:string[]}[]; revoked:string[]; }
+export interface Agent { id:string; role:Role; parent?:string; state:AgentState; services:Service[]; tools:string[]; artifacts:string[]; steps:number; model:string; messages:{from:string;content:string;provenance:string[]}[]; revoked:string[]; revokedTools?:string[]; }
 export interface ToolCall { id:string; name:string; arguments:string; }
 export interface ChatMessage { role:'system'|'user'|'assistant'|'tool'; content:string|null; tool_calls?:{id:string;type:'function';function:{name:string;arguments:string}}[]; tool_call_id?:string; }
 export interface ToolDefinition { type:'function'; function:{name:string;description:string;parameters:Record<string,unknown>}; }

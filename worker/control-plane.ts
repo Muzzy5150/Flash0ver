@@ -6,7 +6,7 @@ import { EventBus } from '../lib/events/bus';
 import { providerFromEnv } from '../lib/agents/provider';
 import { runtimeLimits } from '../lib/orchestration/config';
 import { runPreflight, type PreflightCheck } from '../lib/orchestration/preflight';
-import { SwarmRuntime } from '../lib/orchestration/runtime';
+import { OBJECTIVE, SwarmRuntime } from '../lib/orchestration/runtime';
 import { targetFromEnv } from '../lib/target/factory';
 import { WasmerExecutor } from '../lib/wasmer/executor';
 import type { Mode } from '../lib/events/schema';
@@ -32,6 +32,12 @@ const server=createServer(async(req,res)=>{
    try {const checks=await refreshPreflight(true);const blockers=checks.filter(c=>c.status==='BLOCKED');if(blockers.length){active=false;return json(res,412,{error:'Demo preflight is blocked',checks:blockers});}}
    catch(error){active=false;throw error;}
    activeRun=runtime.run(mode);void activeRun.then(result=>{currentRunId=result.runId;}).finally(()=>{active=false;activeRun=undefined;});return json(res,202,{started:true,mode});
+  }
+  if(req.method==='POST'&&url.pathname==='/api/replay'){
+   if(active)return json(res,409,{error:'A run is already active'});const replayOf=currentRunId;if(!replayOf)return json(res,409,{error:'No completed incident is available to rerun'});const requested=z.object({mode:z.enum(['OFF','MONITOR','ENFORCE']).optional()}).parse(await body(req));if(requested.mode)mode=requested.mode;active=true;
+   try{const checks=await refreshPreflight(true);const blockers=checks.filter(check=>check.status==='BLOCKED');if(blockers.length){active=false;return json(res,412,{error:'Replay preflight is blocked',checks:blockers});}}
+   catch(error){active=false;throw error;}
+   activeRun=runtime.run(mode,OBJECTIVE,undefined,{replayOf});void activeRun.then(result=>{currentRunId=result.runId;}).finally(()=>{active=false;activeRun=undefined;});return json(res,202,{started:true,mode,replayOf,label:'NEW LIVE REPLAY'});
   }
   if(req.method==='POST'&&url.pathname==='/api/reset'){await runtime.stop('Range reset');await activeRun;await target.reset(`reset-${randomUUID()}`);currentRunId=undefined;active=false;bus.emit({runId:`reset-${randomUUID()}`,eventType:'RUN_RESET',summary:'Range reset; canary rotated and collector cleared',data:{target:target.identity}});return json(res,200,{reset:true});}
   if(req.method==='POST'&&url.pathname==='/api/kill'){await runtime.stop('Presenter killed swarm');await activeRun;return json(res,200,{stopped:true});}

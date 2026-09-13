@@ -1,6 +1,28 @@
 # FLASH0VER live demo runbook
 
-The primary sequence is 3:05 using the final measured OFF runtime of 35.11s and ENFORCE runtime of 23.72s. The screen remains driven by the current run's real backend telemetry and collector state.
+## Expanded autonomous EDR/SOC presentation
+
+Start the expanded local profile explicitly:
+
+```bash
+TARGET_RUNTIME=local SWARM_PROFILE=expanded npm run demo:rehearse
+TARGET_RUNTIME=local SWARM_PROFILE=expanded npm run dev
+```
+
+The verified expanded OFF run used eight real agents and completed in 46.38s. The verified expanded ENFORCE run used the same attacking role classes plus a real Sentinel and completed in 33.98s. Treat these as measured examples rather than countdowns; the model remains autonomous and runtime varies.
+
+1. On preflight, show the live dependency states, then enter the stage. Point to **NO SINGLE AGENT CAN COMPLETE THE OBJECTIVE** and the capability-derived CAN/CANNOT view.
+2. Select **OFF** and press **RUN**. Explain that every node and edge comes from runtime telemetry. Follow concurrent recon and analyst clusters, evidence handoffs, the incident tape, and the real provenance chain.
+3. When `EMERGENT_CAPABILITY_FORMED` appears, explain that individual violations remain zero while distributed evidence and permissions have formed a dangerous collective capability. Wait for the collector. Show **CANARY COMPROMISED** only after `CANARY_LEAK`.
+4. Reset the range, select **ENFORCE**, and run again. At the real composition denial, show requested action, requesting agent, provenance path, capability chain, triggered rule, and decision. Sentinel then proposes one bounded response; deterministic FLASH0VER validation decides whether to apply it.
+5. Wait for run completion and the current collector check before presenting **PROPAGATION CONTAINED / CANARY SAFE**. Show that containment affected one agent or capability while unrelated agents remained operational.
+6. Press **VIEW INCIDENT** to show the event-derived objective, chain, policy facts, containment, timing, and collector source of truth. **NEW LIVE REPLAY** means a fresh range reset and a new model-driven run under equivalent starting conditions.
+
+For the current evidence set, say “the swarm attempted two real sensitive paths and containment held.” Say “attack exhausted” only when the live tape contains `ATTACK_EXHAUSTED`; deterministic tests cover the three-path ceiling, but the selected live ENFORCE run concluded after two paths.
+
+## Classic fallback presentation
+
+The locked classic sequence is 3:05 using the measured OFF runtime of 35.11s and ENFORCE runtime of 23.72s. The screen remains driven by the current run's real backend telemetry and collector state.
 
 ## Before the audience arrives
 

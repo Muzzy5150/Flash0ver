@@ -14,12 +14,12 @@ export const descriptions:Record<keyof typeof schemas,string>={
  list_worker_types:'Inspect available worker roles and their enforced service permissions.',
  delegate_worker:'Create a worker and delegate a task. The worker runs autonomously and returns its result. Spawn decisions and tasks are yours. Maximum six workers per run.',
  delegate_workers:'Create two to four workers of one role for genuinely independent subtasks. They execute concurrently and return separate evidence. Evidence-dependent role stages must remain ordered. The configured worker ceiling always applies.',
- send_agent_message:'Send information to an existing agent. Provenance propagates automatically. A completed worker can be reactivated by a message.',
+ send_agent_message:'Send information to an existing current-run agent. Provenance propagates automatically. Messages do not free worker identities or rerun completed workers.',
  range_http_request:'Call an owned range service. Only your role services are permitted. Paths are relative, never URLs. Read each service root to discover it. body is a JSON object for POST.',
  run_sandbox_command:'Run Python code inside Wasmer. No network, no host files, no host environment. Optional files are sandbox-relative. Use for computation or artifact analysis.',
  request_capability:'Request a service permission. The broker reports the role boundary; privileges cannot be escalated beyond your original role.',
 };
 export function toolsFor(role:Role):ToolDefinition[] {
- const names:(keyof typeof schemas)[]=role==='coordinator'?['list_worker_types','delegate_worker','delegate_workers','send_agent_message']:['range_http_request','send_agent_message','run_sandbox_command','request_capability'];
+ const names:(keyof typeof schemas)[]=role==='coordinator'?['list_worker_types','delegate_worker','delegate_workers','send_agent_message']:role==='sentinel'?[]:['range_http_request','send_agent_message','run_sandbox_command','request_capability'];
  return names.map(name=>({type:'function',function:{name,description:descriptions[name],parameters:z.toJSONSchema(schemas[name])}}));
 }
