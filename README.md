@@ -16,7 +16,7 @@
 
 <p align="center">
   <a href="https://github.com/Muzzy5150/Flash0ver"><img alt="GitHub repository" src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github" /></a>
-  <img alt="Tests" src="https://img.shields.io/badge/tests-65%20passing-34d399?style=for-the-badge" />
+  <img alt="Tests" src="https://img.shields.io/badge/tests-69%20passing-34d399?style=for-the-badge" />
   <img alt="Agents" src="https://img.shields.io/badge/agents-20%2B-22d3ee?style=for-the-badge" />
 </p>
 
@@ -28,7 +28,7 @@
   <img alt="Daybreak Blue" src="https://img.shields.io/badge/Daybreak-Blue-2563EB?style=flat-square" />
   <img alt="Wasmer" src="https://img.shields.io/badge/Wasmer-Sandboxed-654FF0?style=flat-square" />
   <img alt="Tenki Cloud" src="https://img.shields.io/badge/Tenki-Disposable%20Range-06B6D4?style=flat-square" />
-  <img alt="Vitest" src="https://img.shields.io/badge/Vitest-65%2F65-6E9F18?style=flat-square&logo=vitest&logoColor=white" />
+  <img alt="Vitest" src="https://img.shields.io/badge/Vitest-69%2F69-6E9F18?style=flat-square&logo=vitest&logoColor=white" />
 </p>
 
 <p align="center">
@@ -327,7 +327,7 @@ Then:
 
 ```bash
 npm run preflight
-npm run dev
+npm run cli -- start
 ```
 
 Open:
@@ -337,6 +337,41 @@ http://127.0.0.1:3000
 ```
 
 The control plane binds to `127.0.0.1:4310`.
+
+### Terminal CLI
+
+The ANSI terminal client uses the same localhost control plane and source-backed event stream as the dashboard. Run it without a command for the arrow-key guided interface. **GUIDED RUN** checks readiness, asks for `OFF`, `MONITOR`, or `ENFORCE`, presents a final **APPROVE & LAUNCH** choice, and then streams the real run:
+
+```bash
+npm run cli
+```
+
+![FLASH0VER guided terminal command interface](docs/screenshots/cli-command-menu.png)
+
+Direct commands are also available. Keep `start` running in one terminal, then use another terminal for commands:
+
+```bash
+# Red block identity and command reference
+npm run cli -- help
+
+# Live dependency and target state
+npm run cli -- preflight
+npm run cli -- status
+
+# Real model-driven runs with colorful telemetry
+npm run cli -- run --mode OFF
+npm run cli -- run --mode MONITOR
+npm run cli -- run --mode ENFORCE
+
+# Follow, reset, or stop the current swarm
+npm run cli -- watch
+npm run cli -- reset
+npm run cli -- kill
+```
+
+![FLASH0VER source-backed live terminal telemetry](docs/screenshots/cli-live-telemetry.png)
+
+Use `NO_COLOR=1` or `--no-color` when plain output is required. The CLI redacts credential-shaped strings and sensitive query values before rendering telemetry.
 
 ### Tenki Cloud
 
@@ -362,6 +397,12 @@ npm run preflight
 # Start control plane + dashboard
 npm run dev
 
+# Start the verified local Range V2 stack through the terminal CLI
+npm run cli -- start
+
+# Show CLI commands
+npm run cli -- help
+
 # One real model-driven verification run
 npm run demo:verify
 
@@ -385,7 +426,7 @@ npm run test:tenki-live
 
 The verified build was validated with:
 
-- **65/65 automated tests passing**
+- **69/69 automated tests passing**
 - TypeScript check passing
 - Next.js production build passing
 - Wasmer isolation checks passing

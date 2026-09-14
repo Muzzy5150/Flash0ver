@@ -20,6 +20,7 @@
     "wasmer"
   ],
   "scripts": {
+    "cli": "tsx --env-file-if-exists=.env scripts/flash0ver-cli.ts",
     "dev": "concurrently -k -n control,web 'npm:worker' 'next dev --hostname 127.0.0.1'",
     "worker": "tsx --env-file-if-exists=.env worker/control-plane.ts",
     "build": "next build",
